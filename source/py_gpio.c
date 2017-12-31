@@ -1003,6 +1003,7 @@ PyMODINIT_FUNC init_GPIO(void)
       gpio_direction[i] = -1;
 
    // detect board revision and set up accordingly
+   /*
    if (get_rpi_info(&rpiinfo))
    {
       PyErr_SetString(PyExc_RuntimeError, "This module can only be run on a Raspberry Pi!");
@@ -1013,6 +1014,15 @@ PyMODINIT_FUNC init_GPIO(void)
       return;
 #endif
    }
+    */
+
+   strcpy(rpiinfo.revision, "4");
+   rpiinfo.p1_revision = 3;
+   rpiinfo.type = "Pi 3 Model B";
+   rpiinfo.manufacturer = "Unknown";
+   rpiinfo.processor = "BCM2837";
+   rpiinfo.ram = "1024M";
+
    board_info = Py_BuildValue("{sissssssssss}",
                               "P1_REVISION",rpiinfo.p1_revision,
                               "REVISION",&rpiinfo.revision,
