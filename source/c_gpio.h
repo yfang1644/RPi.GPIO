@@ -23,7 +23,7 @@ SOFTWARE.
 #ifndef _C_GPIO_H
 #define _C_GPIO_H
 
-volatile unsigned int *mapRegAddr(unsigned int baseAddr);
+unsigned int *mapRegAddr(unsigned int baseAddr);
 
 int setup(void);
 void setup_gpio(int gpio, int direction, int pud);
@@ -52,8 +52,9 @@ void cleanup(void);
 #define SETUP_CPUINFO_FAIL 4
 #define SETUP_NOT_RPI_FAIL 5
 
-#define OUTPUT 0 // is really 1 for control register!
-#define INPUT  1 // is really 0 for control register!
+#define INPUT  0 // is really 0 for control register!
+#define OUTPUT 1 // is really 1 for control register!
+#define HWPWM  2 // hardware PWM
 
 #define ALT0   4 // hard pwm for gpio12/13
 #define ALT5   2 // hard pwm for gpio18/19

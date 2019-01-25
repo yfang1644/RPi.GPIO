@@ -32,6 +32,8 @@ static PyObject *rpi_revision; // deprecated
 static PyObject *board_info;
 static int gpio_warnings = 1;
 
+int gpio_direction[54];
+
 struct py_callback
 {
    unsigned int gpio;
@@ -187,7 +189,7 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
 {
    unsigned int gpio;
    int channel = -1;
-   int direction;
+   int direction = INPUT;
    int i, chancount;
    PyObject *chanlist = NULL;
    PyObject *chantuple = NULL;
@@ -202,9 +204,8 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
          return 0;
 
       func = gpio_function(gpio);
-      if (gpio_warnings &&                             // warnings enabled and
-          ((func != 0 && func != 1) ||                 // (already one of the alt functions or
-          (gpio_direction[gpio] == -1 && func == 1)))  // already an output not set from this program)
+      if (gpio_warnings ||                             // warnings enabled and
+          gpio_direction[gpio] != -1)                  // already in use
       {
          PyErr_WarnEx(NULL, "This channel is already in use, continuing anyway.  Use GPIO.setwarnings(False) to disable warnings.", 1);
       }

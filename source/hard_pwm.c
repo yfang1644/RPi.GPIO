@@ -7,7 +7,7 @@
 #include "c_gpio.h"
 #include "hard_pwm.h"
 
-extern volatile unsigned int *clk_map, *pwm_map, *gpio_map;
+extern volatile unsigned int *gpio_map, *clk_map, *pwm_map;
 
 static int divisor = 8;
 /* 
@@ -32,6 +32,28 @@ int PWM_enable(int gpio, _Bool enable)
 
     *(pwm_map + PWM_CTL) = reg;
 
+    return 0;
+}
+
+/* 
+* ===  FUNCTION  =============================================================
+*         Name:  setup_hard_pwm
+*  Description:  
+* ============================================================================
+*/
+int setup_hard_pwm(int gpio)
+{
+    int offset = (gpio/10);
+    int shift = (gpio%10)*3;
+    int reg = 0;
+
+    reg = *(gpio_map+offset);
+    reg &= ~(7 << shift);
+
+    if (gpio == 18 || gpio==19) {
+        reg |= (ALT5 <<shift);
+    }
+    *(gpio_map + offset) = reg;
     return 0;
 }
 
@@ -132,7 +154,7 @@ int PWMCLK_reset(int div0)
 int setFrequency(int gpio, float frequency)
 {
     int counts, bits;
-	float f;
+    float f;
     int pin = gpio - 18;
     if (pin < 0 || pin > 2)
         return ERRPIN;
@@ -141,7 +163,7 @@ int setFrequency(int gpio, float frequency)
     if (frequency < 0 || frequency > 19200000.0f)
         return ERRFREQ;
 
-	counts = *(pwm_map + PWM_RNG(pin));
+    counts = *(pwm_map + PWM_RNG(pin));
     bits = *(pwm_map + PWM_DAT(pin));
 
     if (counts)
@@ -186,9 +208,9 @@ int setDutyCycle(int gpio, float dutycycle)
 *  Description:  Puts all Peripheral registers in their original (reset state)
 * ============================================================================
 */
-void PWM_stop()
+void hardwarePWM_stop()
 {
-	PWMCLK_reset(0);
+    PWMCLK_reset(0);
     if(munmap((void*)pwm_map, BLOCK_SIZE) < 0){
         perror("munmap (pwm)");
         exit(1);
@@ -211,7 +233,7 @@ void PWM_stop()
 *                without output signal
 * ============================================================================
 */
-void PWM_init()
+void hardwarePWM_init()
 {
     PWMCLK_reset(divisor);
 }

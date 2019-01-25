@@ -25,7 +25,6 @@ SOFTWARE.
 #include <time.h>
 #include "c_gpio.h"
 #include "soft_pwm.h"
-#include "hard_pwm.h"
 
 pthread_t threads;
 
@@ -141,7 +140,6 @@ struct pwm *find_pwm(unsigned int gpio)
 void pwm_set_duty_cycle(unsigned int gpio, float dutycycle)
 {
     struct pwm *p;
-    int ret;
 
     if (dutycycle < 0.0 || dutycycle > 100.0) {
         // btc fixme - error
@@ -149,21 +147,14 @@ void pwm_set_duty_cycle(unsigned int gpio, float dutycycle)
     }
 
     if ((p = find_pwm(gpio)) != NULL) {
-        if ((gpio == 18)||(gpio == 19)) {    /* hardware PWM */
-            ret = setDutyCycle(gpio, dutycycle);
-            if (ret == 0)
-                return;
-        } else {
-            p->dutycycle = dutycycle;
-            calculate_times(p);
-        }
+        p->dutycycle = dutycycle;
+        calculate_times(p);
     }
 }
 
 void pwm_set_frequency(unsigned int gpio, float freq)
 {
     struct pwm *p;
-    int ret = -1;
 
     if (freq <= 0.0) // to avoid divide by zero
     {
@@ -172,15 +163,9 @@ void pwm_set_frequency(unsigned int gpio, float freq)
     }
 
     if ((p = find_pwm(gpio)) != NULL) {
-        if (gpio == 18 || gpio == 19) {    /* hardware PWM */
-            ret = setFrequency(gpio, freq);
-            if (ret == 0)
-                return;
-        } else {
-            p->basetime = 1000.0 / freq;    // calculated in ms
-            p->slicetime = p->basetime / 100.0;
-            calculate_times(p);
-        }
+        p->basetime = 1000.0 / freq;    // calculated in ms
+        p->slicetime = p->basetime / 100.0;
+        calculate_times(p);
     }
 }
 
@@ -191,10 +176,6 @@ void pwm_start(unsigned int gpio)
     if (((p = find_pwm(gpio)) == NULL) || p->running)
         return;
 
-    if (gpio == 18 || gpio == 19) {
-        PWM_enable(gpio, 1);
-        return;
-    }
     p->running = 1;
     if (pthread_create(&threads, NULL, pwm_thread, (void *)p) != 0) {
         // btc fixme - error
@@ -206,11 +187,7 @@ void pwm_start(unsigned int gpio)
 
 void pwm_stop(unsigned int gpio)
 {
-    if (gpio == 18 || gpio == 19) {
-        PWM_enable(gpio, 0);
-    } else {
-        remove_pwm(gpio);
-    }
+    remove_pwm(gpio);
 }
 
 // returns 1 if there is a PWM for this gpio, 0 otherwise

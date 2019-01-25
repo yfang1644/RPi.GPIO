@@ -38,7 +38,8 @@ int setMode(int gpio, int mode);
 int setPolarity(int gpio, int pol);
 int PWM_enable(int gpio, _Bool enable);
 
-void PWM_init(void);
-void PWM_stop(void);
+int setup_hard_pwm(int gpio);
+void hardwarePWM_init(void);
+void hardwarePWM_stop(void);
 
 #endif   /* _HARD_PWM_H */

@@ -30,12 +30,14 @@ SOFTWARE.
 #define I2C          42
 #define PWM          43
 
-int gpio_mode;
+extern int gpio_mode;
 const int pin_to_gpio_rev1[41];
 const int pin_to_gpio_rev2[41];
 const int pin_to_gpio_rev3[41];
 const int (*pin_to_gpio)[41];
-int gpio_direction[54];
+
+extern int gpio_direction[];
+
 rpi_info rpiinfo;
 int setup_error;
 int module_setup;
