@@ -23,14 +23,14 @@ SOFTWARE.
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <string.h>
 #include "c_gpio.h"
+#include "hard_pwm.h"
+#include "common.h"
 
-#define BCM2708_PERI_BASE_DEFAULT   0x20000000
-#define BCM2709_PERI_BASE_DEFAULT   0x3f000000
-#define GPIO_BASE_OFFSET            0x200000
 #define FSEL_OFFSET                 0   // 0x0000
 #define SET_OFFSET                  7   // 0x001c / 4
 #define CLR_OFFSET                  10  // 0x0028 / 4
@@ -43,10 +43,9 @@ SOFTWARE.
 #define PULLUPDN_OFFSET             37  // 0x0094 / 4
 #define PULLUPDNCLK_OFFSET          38  // 0x0098 / 4
 
-#define PAGE_SIZE  (4*1024)
-#define BLOCK_SIZE (4*1024)
-
-static volatile uint32_t *gpio_map;
+static volatile unsigned int *gpio_map;
+static volatile unsigned int *pwm_map;
+static volatile unsigned int *clk_map;
 
 void short_wait(void)
 {
@@ -57,30 +56,39 @@ void short_wait(void)
     }
 }
 
+volatile unsigned int *mapRegAddr(unsigned int baseAddr)
+{
+    int mem_fd;
+    unsigned int *gpio_mem;
+    void *regAddrMap = MAP_FAILED;
+
+    // mmap the GPIO memory registers
+    if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0)
+        return MAP_FAILED;
+
+    if ((gpio_mem = malloc(BLOCK_SIZE + (PAGE_SIZE-1))) == NULL)
+        return MAP_FAILED;
+
+    if ((unsigned int)gpio_mem % PAGE_SIZE)
+        gpio_mem += PAGE_SIZE - ((unsigned int)gpio_mem % PAGE_SIZE);
+
+    regAddrMap = (uint32_t *)mmap( (void *)gpio_mem, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, mem_fd, baseAddr);
+
+    free(gpio_mem);
+    close(mem_fd);
+
+    return (volatile unsigned int *)regAddrMap;
+}
+
 int setup(void)
 {
     int mem_fd;
-    uint8_t *gpio_mem;
     uint32_t peri_base = 0;
-    uint32_t gpio_base;
     unsigned char buf[4];
     FILE *fp;
     char buffer[1024];
     char hardware[1024];
     int found = 0;
-
-    // try /dev/gpiomem first - this does not require root privs
-    if ((mem_fd = open("/dev/gpiomem", O_RDWR|O_SYNC)) > 0)
-    {
-        gpio_map = (uint32_t *)mmap(NULL, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, mem_fd, 0);
-        if ((uint32_t)gpio_map < 0) {
-            return SETUP_MMAP_FAIL;
-        } else {
-            return SETUP_OK;
-        }
-    }
-
-    // revert to /dev/mem method - requires root
 
     // determine peri_base
     if ((fp = fopen("/proc/device-tree/soc/ranges", "rb")) != NULL) {
@@ -114,23 +122,12 @@ int setup(void)
 
     if (!peri_base)
         return SETUP_NOT_RPI_FAIL;
-    gpio_base = peri_base + GPIO_BASE_OFFSET;
 
-    // mmap the GPIO memory registers
-    if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0)
-        return SETUP_DEVMEM_FAIL;
+    gpio_map = mapRegAddr(peri_base + GPIO_BASE_OFFSET);
+    pwm_map = mapRegAddr(peri_base + PWM_BASE_OFFSET);
+    clk_map = mapRegAddr(peri_base + CLK_BASE_OFFSET);
 
-    if ((gpio_mem = malloc(BLOCK_SIZE + (PAGE_SIZE-1))) == NULL)
-        return SETUP_MALLOC_FAIL;
-
-    if ((uint32_t)gpio_mem % PAGE_SIZE)
-        gpio_mem += PAGE_SIZE - ((uint32_t)gpio_mem % PAGE_SIZE);
-
-    gpio_map = (uint32_t *)mmap( (void *)gpio_mem, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, mem_fd, gpio_base);
-
-    if ((uint32_t)gpio_map < 0)
-        return SETUP_MMAP_FAIL;
-
+    PWM_init();
     return SETUP_OK;
 }
 
@@ -210,13 +207,11 @@ void set_pullupdn(int gpio, int pud)
 {
     int clk_offset = PULLUPDNCLK_OFFSET + (gpio/32);
     int shift = (gpio%32);
-
-    if (pud == PUD_DOWN)
-        *(gpio_map+PULLUPDN_OFFSET) = (*(gpio_map+PULLUPDN_OFFSET) & ~3) | PUD_DOWN;
-    else if (pud == PUD_UP)
-        *(gpio_map+PULLUPDN_OFFSET) = (*(gpio_map+PULLUPDN_OFFSET) & ~3) | PUD_UP;
-    else  // pud == PUD_OFF
-        *(gpio_map+PULLUPDN_OFFSET) &= ~3;
+    int reg = 0;
+    reg = *(gpio_map + PULLUPDN_OFFSET);
+    reg &= ~3;
+    reg |= pud;
+    *(gpio_map+PULLUPDN_OFFSET) = reg;
 
     short_wait();
     *(gpio_map+clk_offset) = 1 << shift;
@@ -225,16 +220,25 @@ void set_pullupdn(int gpio, int pud)
     *(gpio_map+clk_offset) = 0;
 }
 
-void setup_gpio(int gpio, int direction, int pud)
+void setup_gpio(int gpio, int function, int pud)
 {
     int offset = FSEL_OFFSET + (gpio/10);
     int shift = (gpio%10)*3;
+    int reg = 0;
 
     set_pullupdn(gpio, pud);
-    if (direction == OUTPUT)
-        *(gpio_map+offset) = (*(gpio_map+offset) & ~(7<<shift)) | (1<<shift);
-    else  // direction == INPUT
-        *(gpio_map+offset) = (*(gpio_map+offset) & ~(7<<shift));
+
+    reg = *(gpio_map+offset);
+    reg &= ~(7 << shift);
+
+    if ((function == INPUT) || (function == OUTPUT)) {
+        reg |= (function <<shift);
+    } else if ((function == PWM) && ((gpio==12)||(gpio==13))) {
+        reg |= (ALT0 <<shift);
+    } else if ((function == PWM) && ((gpio==18)||(gpio==19))) {
+        reg |= (ALT5 <<shift);
+    }
+    *(gpio_map + offset) = reg;
 }
 
 // Contribution by Eric Ptak <trouch@trouch.com>
@@ -245,7 +249,7 @@ int gpio_function(int gpio)
     int value = *(gpio_map+offset);
     value >>= shift;
     value &= 7;
-    return value; // 0=input, 1=output, 4=alt0
+    return value; // 0=input, 1=output, 4=alt0, 2=alt5
 }
 
 void output_gpio(int gpio, int value)
@@ -274,5 +278,6 @@ int input_gpio(int gpio)
 
 void cleanup(void)
 {
+    PWM_stop();
     munmap((void *)gpio_map, BLOCK_SIZE);
 }

@@ -25,19 +25,10 @@ SOFTWARE.
 #include <time.h>
 #include "c_gpio.h"
 #include "soft_pwm.h"
+#include "hard_pwm.h"
+
 pthread_t threads;
 
-struct pwm
-{
-    unsigned int gpio;
-    float freq;
-    float dutycycle;
-    float basetime;
-    float slicetime;
-    struct timespec req_on, req_off;
-    int running;
-    struct pwm *next;
-};
 struct pwm *pwm_list = NULL;
 
 void remove_pwm(unsigned int gpio)
@@ -46,10 +37,8 @@ void remove_pwm(unsigned int gpio)
     struct pwm *prev = NULL;
     struct pwm *temp;
 
-    while (p != NULL)
-    {
-        if (p->gpio == gpio)
-        {
+    while (p != NULL) {
+        if (p->gpio == gpio) {
             if (prev == NULL) {
                 pwm_list = p->next;
             } else {
@@ -92,17 +81,13 @@ void *pwm_thread(void *threadarg)
 {
     struct pwm *p = (struct pwm *)threadarg;
 
-    while (p->running)
-    {
-
-        if (p->dutycycle > 0.0)
-        {
+    while (p->running) {
+        if (p->dutycycle > 0.0) {
             output_gpio(p->gpio, 1);
             full_sleep(&p->req_on);
         }
 
-        if (p->dutycycle < 100.0)
-        {
+        if (p->dutycycle < 100.0) {
             output_gpio(p->gpio, 0);
             full_sleep(&p->req_off);
         }
@@ -136,18 +121,15 @@ struct pwm *find_pwm(unsigned int gpio)
 {
     struct pwm *p = pwm_list;
 
-    if (pwm_list == NULL)
-    {
+    if (pwm_list == NULL) {
         pwm_list = add_new_pwm(gpio);
         return pwm_list;
     }
 
-    while (p != NULL)
-    {
+    while (p != NULL) {
         if (p->gpio == gpio)
             return p;
-        if (p->next == NULL)
-        {
+        if (p->next == NULL) {
             p->next = add_new_pwm(gpio);
             return p->next;
         }
@@ -159,23 +141,29 @@ struct pwm *find_pwm(unsigned int gpio)
 void pwm_set_duty_cycle(unsigned int gpio, float dutycycle)
 {
     struct pwm *p;
+    int ret;
 
-    if (dutycycle < 0.0 || dutycycle > 100.0)
-    {
+    if (dutycycle < 0.0 || dutycycle > 100.0) {
         // btc fixme - error
         return;
     }
 
-    if ((p = find_pwm(gpio)) != NULL)
-    {
-        p->dutycycle = dutycycle;
-        calculate_times(p);
+    if ((p = find_pwm(gpio)) != NULL) {
+        if ((gpio == 18)||(gpio == 19)) {    /* hardware PWM */
+            ret = setDutyCycle(gpio, dutycycle);
+            if (ret == 0)
+                return;
+        } else {
+            p->dutycycle = dutycycle;
+            calculate_times(p);
+        }
     }
 }
 
 void pwm_set_frequency(unsigned int gpio, float freq)
 {
     struct pwm *p;
+    int ret = -1;
 
     if (freq <= 0.0) // to avoid divide by zero
     {
@@ -183,11 +171,16 @@ void pwm_set_frequency(unsigned int gpio, float freq)
         return;
     }
 
-    if ((p = find_pwm(gpio)) != NULL)
-    {
-        p->basetime = 1000.0 / freq;    // calculated in ms
-        p->slicetime = p->basetime / 100.0;
-        calculate_times(p);
+    if ((p = find_pwm(gpio)) != NULL) {
+        if (gpio == 18 || gpio == 19) {    /* hardware PWM */
+            ret = setFrequency(gpio, freq);
+            if (ret == 0)
+                return;
+        } else {
+            p->basetime = 1000.0 / freq;    // calculated in ms
+            p->slicetime = p->basetime / 100.0;
+            calculate_times(p);
+        }
     }
 }
 
@@ -198,9 +191,12 @@ void pwm_start(unsigned int gpio)
     if (((p = find_pwm(gpio)) == NULL) || p->running)
         return;
 
+    if (gpio == 18 || gpio == 19) {
+        PWM_enable(gpio, 1);
+        return;
+    }
     p->running = 1;
-    if (pthread_create(&threads, NULL, pwm_thread, (void *)p) != 0)
-    {
+    if (pthread_create(&threads, NULL, pwm_thread, (void *)p) != 0) {
         // btc fixme - error
         p->running = 0;
         return;
@@ -210,7 +206,11 @@ void pwm_start(unsigned int gpio)
 
 void pwm_stop(unsigned int gpio)
 {
-    remove_pwm(gpio);
+    if (gpio == 18 || gpio == 19) {
+        PWM_enable(gpio, 0);
+    } else {
+        remove_pwm(gpio);
+    }
 }
 
 // returns 1 if there is a PWM for this gpio, 0 otherwise
@@ -218,10 +218,8 @@ int pwm_exists(unsigned int gpio)
 {
     struct pwm *p = pwm_list;
 
-    while (p != NULL)
-    {
-        if (p->gpio == gpio)
-        {
+    while (p != NULL) {
+        if (p->gpio == gpio) {
             return 1;
         } else {
             p = p->next;

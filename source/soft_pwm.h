@@ -21,9 +21,26 @@ SOFTWARE.
 */
 
 /* Software PWM using threads */
- 
+
+#ifndef _SOFT_PWM_H
+#define _SOFT_PWM_H
+
+struct pwm
+{
+    unsigned int gpio;
+    float freq;
+    float dutycycle;
+    float basetime;
+    float slicetime;
+    struct timespec req_on, req_off;
+    int running;
+    struct pwm *next;
+};
+
 void pwm_set_duty_cycle(unsigned int gpio, float dutycycle);
 void pwm_set_frequency(unsigned int gpio, float freq);
 void pwm_start(unsigned int gpio);
 void pwm_stop(unsigned int gpio);
 int pwm_exists(unsigned int gpio);
+
+#endif    /*  _SOFT_PWM_H */

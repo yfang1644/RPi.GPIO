@@ -20,6 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#ifndef _C_GPIO_H
+#define _C_GPIO_H
+
+volatile unsigned int *mapRegAddr(unsigned int baseAddr);
+
 int setup(void);
 void setup_gpio(int gpio, int direction, int pud);
 int gpio_function(int gpio);
@@ -32,6 +37,14 @@ void set_low_event(int gpio, int enable);
 int eventdetected(int gpio);
 void cleanup(void);
 
+#define BCM2708_PERI_BASE_DEFAULT   0x20000000
+#define BCM2709_PERI_BASE_DEFAULT   0x3f000000
+
+#define PAGE_SIZE  (4*1024)
+#define BLOCK_SIZE (4*1024)
+
+#define GPIO_BASE_OFFSET            0x200000
+
 #define SETUP_OK           0
 #define SETUP_DEVMEM_FAIL  1
 #define SETUP_MALLOC_FAIL  2
@@ -39,9 +52,11 @@ void cleanup(void);
 #define SETUP_CPUINFO_FAIL 4
 #define SETUP_NOT_RPI_FAIL 5
 
-#define INPUT  1 // is really 0 for control register!
 #define OUTPUT 0 // is really 1 for control register!
-#define ALT0   4
+#define INPUT  1 // is really 0 for control register!
+
+#define ALT0   4 // hard pwm for gpio12/13
+#define ALT5   2 // hard pwm for gpio18/19
 
 #define HIGH 1
 #define LOW  0
@@ -49,3 +64,5 @@ void cleanup(void);
 #define PUD_OFF  0
 #define PUD_DOWN 1
 #define PUD_UP   2
+
+#endif      /*  _C_GPIO_H */
