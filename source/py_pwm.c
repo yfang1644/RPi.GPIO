@@ -30,7 +30,7 @@ SOFTWARE.
 typedef struct
 {
     PyObject_HEAD
-    unsigned int gpio;
+    int gpio;
     float freq;
     float dutycycle;
 } PWMObject;

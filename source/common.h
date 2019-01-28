@@ -42,4 +42,4 @@ rpi_info rpiinfo;
 int setup_error;
 int module_setup;
 int check_gpio_priv(void);
-int get_gpio_number(int channel, unsigned int *gpio);
+int get_gpio_number(int channel, int *gpio);

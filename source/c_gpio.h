@@ -40,10 +40,19 @@ void cleanup(void);
 #define BCM2708_PERI_BASE_DEFAULT   0x20000000
 #define BCM2709_PERI_BASE_DEFAULT   0x3f000000
 
-#define PAGE_SIZE  (4*1024)
-#define BLOCK_SIZE (4*1024)
-
 #define GPIO_BASE_OFFSET            0x200000
+
+#define FSEL_OFFSET                 0   // 0x0000
+#define SET_OFFSET                  7   // 0x001c / 4
+#define CLR_OFFSET                  10  // 0x0028 / 4
+#define PINLEVEL_OFFSET             13  // 0x0034 / 4
+#define EVENT_DETECT_OFFSET         16  // 0x0040 / 4
+#define RISING_ED_OFFSET            19  // 0x004c / 4
+#define FALLING_ED_OFFSET           22  // 0x0058 / 4
+#define HIGH_DETECT_OFFSET          25  // 0x0064 / 4
+#define LOW_DETECT_OFFSET           28  // 0x0070 / 4
+#define PULLUPDN_OFFSET             37  // 0x0094 / 4
+#define PULLUPDNCLK_OFFSET          38  // 0x0098 / 4
 
 #define SETUP_OK           0
 #define SETUP_DEVMEM_FAIL  1
@@ -65,5 +74,8 @@ void cleanup(void);
 #define PUD_OFF  0
 #define PUD_DOWN 1
 #define PUD_UP   2
+
+#define PAGE_SIZE  (4*1024)
+#define BLOCK_SIZE (4*1024)
 
 #endif      /*  _C_GPIO_H */

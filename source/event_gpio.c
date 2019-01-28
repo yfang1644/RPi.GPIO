@@ -29,13 +29,12 @@ SOFTWARE.
 #include <unistd.h>
 #include <string.h>
 #include <sys/time.h>
+#include "c_gpio.h"
 #include "event_gpio.h"
-
-const char *stredge[4] = {"none", "rising", "falling", "both"};
 
 struct gpios
 {
-    unsigned int gpio;
+    int gpio;
     int value_fd;
     int exported;
     int edge;
@@ -51,8 +50,8 @@ struct gpios *gpio_list = NULL;
 // event callbacks
 struct callback
 {
-    unsigned int gpio;
-    void (*func)(unsigned int gpio);
+    int gpio;
+    void (*func)(int gpio);
     struct callback *next;
 };
 struct callback *callbacks = NULL;
@@ -73,13 +72,13 @@ int epfd_blocking = -1;
     }                                                               \
 } while (/* CONSTCOND */ 0)
 
-int gpio_export(unsigned int gpio)
+int gpio_export(int gpio)
 {
     int fd, len;
-    char str_gpio[3];
-    char filename[33];
+    char str_gpio[8];
+    char filename[64];
 
-    snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d", gpio);
+    sprintf(filename, "/sys/class/gpio/gpio%d", gpio);
 
     /* return if gpio already exported */
     if (access(filename, F_OK) != -1) {
@@ -90,86 +89,84 @@ int gpio_export(unsigned int gpio)
        return -1;
     }
 
-    len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio);
-    x_write(fd, str_gpio, len);
+    len = sprintf(str_gpio, "%d", gpio);
+    write(fd, str_gpio, len);
     close(fd);
 
     return 0;
 }
 
-int gpio_unexport(unsigned int gpio)
+int gpio_unexport(int gpio)
 {
     int fd, len;
-    char str_gpio[3];
+    char str_gpio[8];
 
     if ((fd = open("/sys/class/gpio/unexport", O_WRONLY)) < 0)
         return -1;
 
-    len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio);
-    x_write(fd, str_gpio, len);
+    len = sprintf(str_gpio, "%d", gpio);
+    write(fd, str_gpio, len);
     close(fd);
 
     return 0;
 }
 
-int gpio_set_direction(unsigned int gpio, unsigned int in_flag)
+int gpio_set_direction(int gpio, int in_flag)
 {
     int retry;
-    struct timespec delay;
     int fd;
-    char filename[33];
+    char filename[64];
 
-    snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/direction", gpio);
+    sprintf(filename, "/sys/class/gpio/gpio%d/direction", gpio);
 
     // retry waiting for udev to set correct file permissions
-    delay.tv_sec = 0;
-    delay.tv_nsec = 10000000L; // 10ms
     for (retry=0; retry<100; retry++) {
         if ((fd = open(filename, O_WRONLY)) >= 0)
             break;
-        nanosleep(&delay, NULL);
+        usleep(10000);
     }
     if (retry >= 100)
         return -1;
 
-    if (in_flag)
-        x_write(fd, "in", 3);
+    if (in_flag == INPUT)
+        write(fd, "in", 3);
     else
-        x_write(fd, "out", 4);
+        write(fd, "out", 4);
 
     close(fd);
     return 0;
 }
 
-int gpio_set_edge(unsigned int gpio, unsigned int edge)
+int gpio_set_edge(int gpio, int edge)
 {
     int fd;
-    char filename[28];
+    const char *stredge[4] = {"none", "rising", "falling", "both"};
+    char filename[64];
 
-    snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/edge", gpio);
+    sprintf(filename, "/sys/class/gpio/gpio%d/edge", gpio);
 
     if ((fd = open(filename, O_WRONLY)) < 0)
         return -1;
 
-    x_write(fd, stredge[edge], strlen(stredge[edge]) + 1);
+    write(fd, stredge[edge], strlen(stredge[edge]) + 1);
     close(fd);
-    return 0;
+    return edge;
 }
 
-int open_value_file(unsigned int gpio)
+int open_value_file(int gpio)
 {
     int fd;
-    char filename[29];
+    char filename[64];
 
     // create file descriptor of value file
-    snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/value", gpio);
+    sprintf(filename, "/sys/class/gpio/gpio%d/value", gpio);
     if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0)
         return -1;
     return fd;
 }
 
 /********* gpio list functions **********/
-struct gpios *get_gpio(unsigned int gpio)
+struct gpios *get_gpio(int gpio)
 {
     struct gpios *g = gpio_list;
     while (g != NULL) {
@@ -191,25 +188,20 @@ struct gpios *get_gpio_from_value_fd(int fd)
     return NULL;
 }
 
-struct gpios *new_gpio(unsigned int gpio)
+struct gpios *new_gpio(int gpio)
 {
     struct gpios *new_gpio;
+
+    if (gpio_export(gpio) != 0) {
+        return NULL;
+    }
+    if (gpio_set_direction(gpio, INPUT) != 0) {
+        return NULL;
+    }
 
     new_gpio = malloc(sizeof(struct gpios));
     if (new_gpio == 0) {
         return NULL;  // out of memory
-    }
-
-    new_gpio->gpio = gpio;
-    if (gpio_export(gpio) != 0) {
-        free(new_gpio);
-        return NULL;
-    }
-    new_gpio->exported = 1;
-
-    if (gpio_set_direction(gpio,1) != 0) { // 1==input
-        free(new_gpio);
-        return NULL;
     }
 
     if ((new_gpio->value_fd = open_value_file(gpio)) == -1) {
@@ -218,22 +210,20 @@ struct gpios *new_gpio(unsigned int gpio)
         return NULL;
     }
 
+    new_gpio->gpio = gpio;
+    new_gpio->exported = 1;
     new_gpio->initial_thread = 1;
     new_gpio->initial_wait = 1;
     new_gpio->bouncetime = -666;
     new_gpio->lastcall = 0;
     new_gpio->thread_added = 0;
 
-    if (gpio_list == NULL) {
-        new_gpio->next = NULL;
-    } else {
-        new_gpio->next = gpio_list;
-    }
+    new_gpio->next = gpio_list;
     gpio_list = new_gpio;
     return new_gpio;
 }
 
-void delete_gpio(unsigned int gpio)
+void delete_gpio(int gpio)
 {
     struct gpios *g = gpio_list;
     struct gpios *prev = NULL;
@@ -253,7 +243,7 @@ void delete_gpio(unsigned int gpio)
     }
 }
 
-int gpio_event_added(unsigned int gpio)
+int gpio_event_added(int gpio)
 {
     struct gpios *g = gpio_list;
     while (g != NULL) {
@@ -265,7 +255,7 @@ int gpio_event_added(unsigned int gpio)
 }
 
 /******* callback list functions ********/
-int add_edge_callback(unsigned int gpio, void (*func)(unsigned int gpio))
+int add_edge_callback(int gpio, void (*func)(int gpio))
 {
     struct callback *cb = callbacks;
     struct callback *new_cb;
@@ -290,7 +280,7 @@ int add_edge_callback(unsigned int gpio, void (*func)(unsigned int gpio))
     return 0;
 }
 
-int callback_exists(unsigned int gpio)
+int callback_exists(int gpio)
 {
     struct callback *cb = callbacks;
     while (cb != NULL) {
@@ -301,27 +291,24 @@ int callback_exists(unsigned int gpio)
     return 0;
 }
 
-void run_callbacks(unsigned int gpio)
+void run_callbacks(int gpio)
 {
     struct callback *cb = callbacks;
-    while (cb != NULL)
-    {
+    while (cb != NULL) {
         if (cb->gpio == gpio)
             cb->func(cb->gpio);
         cb = cb->next;
     }
 }
 
-void remove_callbacks(unsigned int gpio)
+void remove_callbacks(int gpio)
 {
     struct callback *cb = callbacks;
     struct callback *temp;
     struct callback *prev = NULL;
 
-    while (cb != NULL)
-    {
-        if (cb->gpio == gpio)
-        {
+    while (cb != NULL) {
+        if (cb->gpio == gpio) {
             if (prev == NULL)
                 callbacks = cb->next;
             else
@@ -360,7 +347,9 @@ void *poll_thread(void *threadarg)
             } else {
                 gettimeofday(&tv_timenow, NULL);
                 timenow = tv_timenow.tv_sec*1E6 + tv_timenow.tv_usec;
-                if (g->bouncetime == -666 || timenow - g->lastcall > (unsigned int)g->bouncetime*1000 || g->lastcall == 0 || g->lastcall > timenow) {
+                if (g->bouncetime == -666 ||
+                    timenow - g->lastcall > (unsigned int)g->bouncetime*1000 ||
+                    g->lastcall == 0 || g->lastcall > timenow) {
                     g->lastcall = timenow;
                     event_occurred[g->gpio] = 1;
                     run_callbacks(g->gpio);
@@ -381,7 +370,7 @@ void *poll_thread(void *threadarg)
     pthread_exit(NULL);
 }
 
-void remove_edge_detect(unsigned int gpio)
+void remove_edge_detect(int gpio)
 {
     struct epoll_event ev;
     struct gpios *g = get_gpio(gpio);
@@ -399,8 +388,7 @@ void remove_edge_detect(unsigned int gpio)
     remove_callbacks(gpio);
 
     // btc fixme - check return result??
-    gpio_set_edge(gpio, NO_EDGE);
-    g->edge = NO_EDGE;
+    g->edge = gpio_set_edge(gpio, NO_EDGE);
 
     if (g->value_fd != -1)
         close(g->value_fd);
@@ -412,7 +400,7 @@ void remove_edge_detect(unsigned int gpio)
     delete_gpio(gpio);
 }
 
-int event_detected(unsigned int gpio)
+int event_detected(int gpio)
 {
     if (event_occurred[gpio]) {
         event_occurred[gpio] = 0;
@@ -449,10 +437,10 @@ void event_cleanup(int gpio)
 
 void event_cleanup_all(void)
 {
-   event_cleanup(-666);
+    event_cleanup(-666);
 }
 
-int add_edge_detect(unsigned int gpio, unsigned int edge, int bouncetime)
+int add_edge_detect(int gpio, int edge, int bouncetime)
 // return values:
 // 0 - Success
 // 1 - Edge detection already added
@@ -470,10 +458,9 @@ int add_edge_detect(unsigned int gpio, unsigned int edge, int bouncetime)
             return 2;
         }
 
-        gpio_set_edge(gpio, edge);
-        g->edge = edge;
+        g->edge = gpio_set_edge(gpio, edge);
         g->bouncetime = bouncetime;
-    } else if (i == (int)edge) {  // get existing event
+    } else if (i == edge) {  // get existing event
         g = get_gpio(gpio);
         if ((bouncetime != -666 && g->bouncetime != bouncetime) ||  // different event bouncetime used
             (g->thread_added))                // event already added
@@ -505,7 +492,7 @@ int add_edge_detect(unsigned int gpio, unsigned int edge, int bouncetime)
     return 0;
 }
 
-int blocking_wait_for_edge(unsigned int gpio, unsigned int edge, int bouncetime, int timeout)
+int blocking_wait_for_edge(int gpio, int edge, int bouncetime, int timeout)
 // return values:
 //    1 - Success (edge detected)
 //    0 - Timeout
@@ -535,13 +522,11 @@ int blocking_wait_for_edge(unsigned int gpio, unsigned int edge, int bouncetime,
         if ((g = new_gpio(gpio)) == NULL) {
             return -2;
         }
-        gpio_set_edge(gpio, edge);
-        g->edge = edge;
+        g->edge = gpio_set_edge(gpio, edge);
         g->bouncetime = bouncetime;
     } else {    // ed != edge - event for a different edge
         g = get_gpio(gpio);
-        gpio_set_edge(gpio, edge);
-        g->edge = edge;
+        g->edge = gpio_set_edge(gpio, edge);
         g->bouncetime = bouncetime;
         g->initial_wait = 1;
     }
@@ -576,7 +561,9 @@ int blocking_wait_for_edge(unsigned int gpio, unsigned int edge, int bouncetime,
         } else {
             gettimeofday(&tv_timenow, NULL);
             timenow = tv_timenow.tv_sec*1E6 + tv_timenow.tv_usec;
-            if (g->bouncetime == -666 || timenow - g->lastcall > (unsigned int)g->bouncetime*1000 || g->lastcall == 0 || g->lastcall > timenow) {
+            if (g->bouncetime == -666 ||
+                timenow - g->lastcall > (unsigned int)g->bouncetime*1000 ||
+                g->lastcall == 0 || g->lastcall > timenow) {
                 g->lastcall = timenow;
                 finished = 1;
             }
