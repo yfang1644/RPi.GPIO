@@ -27,7 +27,7 @@ SOFTWARE.
 
 struct pwm
 {
-    unsigned int gpio;
+    int gpio;
     float freq;
     float dutycycle;
     float basetime;
@@ -37,10 +37,10 @@ struct pwm
     struct pwm *next;
 };
 
-void pwm_set_duty_cycle(unsigned int gpio, float dutycycle);
-void pwm_set_frequency(unsigned int gpio, float freq);
-void pwm_start(unsigned int gpio);
-void pwm_stop(unsigned int gpio);
-int pwm_exists(unsigned int gpio);
+void pwm_set_duty_cycle(int gpio, float dutycycle);
+void pwm_set_frequency(int gpio, float freq);
+void pwm_start(int gpio);
+void pwm_stop(int gpio);
+int pwm_exists(int gpio);
 
 #endif    /*  _SOFT_PWM_H */

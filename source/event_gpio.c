@@ -24,39 +24,18 @@ SOFTWARE.
 #include <sys/epoll.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <string.h>
 #include <sys/time.h>
 #include "c_gpio.h"
 #include "event_gpio.h"
 
-struct gpios
-{
-    int gpio;
-    int value_fd;
-    int exported;
-    int edge;
-    int initial_thread;
-    int initial_wait;
-    int thread_added;
-    int bouncetime;
-    unsigned long long lastcall;
-    struct gpios *next;
-};
 struct gpios *gpio_list = NULL;
 
-// event callbacks
-struct callback
-{
-    int gpio;
-    void (*func)(int gpio);
-    struct callback *next;
-};
 struct callback *callbacks = NULL;
 
-pthread_t threads;
 int event_occurred[54] = { 0 };
 int thread_running = 0;
 int epfd_thread = -1;
@@ -111,32 +90,6 @@ int gpio_unexport(int gpio)
     return 0;
 }
 
-int gpio_set_direction(int gpio, int in_flag)
-{
-    int retry;
-    int fd;
-    char filename[64];
-
-    sprintf(filename, "/sys/class/gpio/gpio%d/direction", gpio);
-
-    // retry waiting for udev to set correct file permissions
-    for (retry=0; retry<100; retry++) {
-        if ((fd = open(filename, O_WRONLY)) >= 0)
-            break;
-        usleep(10000);
-    }
-    if (retry >= 100)
-        return -1;
-
-    if (in_flag == INPUT)
-        write(fd, "in", 3);
-    else
-        write(fd, "out", 4);
-
-    close(fd);
-    return 0;
-}
-
 int gpio_set_edge(int gpio, int edge)
 {
     int fd;
@@ -150,6 +103,7 @@ int gpio_set_edge(int gpio, int edge)
 
     write(fd, stredge[edge], strlen(stredge[edge]) + 1);
     close(fd);
+
     return edge;
 }
 
@@ -195,7 +149,7 @@ struct gpios *new_gpio(int gpio)
     if (gpio_export(gpio) != 0) {
         return NULL;
     }
-    if (gpio_set_direction(gpio, INPUT) != 0) {
+    if (gpio_function(gpio) != INPUT) {
         return NULL;
     }
 
@@ -251,7 +205,7 @@ int gpio_event_added(int gpio)
             return g->edge;
         g = g->next;
     }
-    return 0;
+    return NO_EDGE;
 }
 
 /******* callback list functions ********/
@@ -277,6 +231,7 @@ int add_edge_callback(int gpio, void (*func)(int gpio))
             cb = cb->next;
         cb->next = new_cb;
     }
+
     return 0;
 }
 
@@ -349,7 +304,8 @@ void *poll_thread(void *threadarg)
                 timenow = tv_timenow.tv_sec*1E6 + tv_timenow.tv_usec;
                 if (g->bouncetime == -666 ||
                     timenow - g->lastcall > (unsigned int)g->bouncetime*1000 ||
-                    g->lastcall == 0 || g->lastcall > timenow) {
+                    g->lastcall == 0 ||
+                    g->lastcall > timenow) {
                     g->lastcall = timenow;
                     event_occurred[g->gpio] = 1;
                     run_callbacks(g->gpio);
@@ -448,19 +404,18 @@ int add_edge_detect(int gpio, int edge, int bouncetime)
 {
     pthread_t threads;
     struct epoll_event ev;
-    long t = 0;
     struct gpios *g;
-    int i = -1;
+    int ed = -1;
 
-    i = gpio_event_added(gpio);
-    if (i == 0) {    // event not already added
+    ed = gpio_event_added(gpio);
+    if (ed == NO_EDGE) {    // event not already added
         if ((g = new_gpio(gpio)) == NULL) {
             return 2;
         }
 
         g->edge = gpio_set_edge(gpio, edge);
         g->bouncetime = bouncetime;
-    } else if (i == edge) {  // get existing event
+    } else if (ed == edge) {  // get existing event
         g = get_gpio(gpio);
         if ((bouncetime != -666 && g->bouncetime != bouncetime) ||  // different event bouncetime used
             (g->thread_added))                // event already added
@@ -484,7 +439,7 @@ int add_edge_detect(int gpio, int edge, int bouncetime)
 
     // start poll thread if it is not already running
     if (!thread_running) {
-        if (pthread_create(&threads, NULL, poll_thread, (void *)t) != 0) {
+        if (pthread_create(&threads, NULL, poll_thread, NULL) != 0) {
            remove_edge_detect(gpio);
            return 2;
         }
@@ -513,7 +468,7 @@ int blocking_wait_for_edge(int gpio, int edge, int bouncetime, int timeout)
 
     // add gpio if it has not been added already
     ed = gpio_event_added(gpio);
-    if (ed == (int)edge) {   // get existing record
+    if (ed == edge) {   // get existing record
         g = get_gpio(gpio);
         if (g->bouncetime != -666 && g->bouncetime != bouncetime) {
             return -1;
@@ -563,7 +518,8 @@ int blocking_wait_for_edge(int gpio, int edge, int bouncetime, int timeout)
             timenow = tv_timenow.tv_sec*1E6 + tv_timenow.tv_usec;
             if (g->bouncetime == -666 ||
                 timenow - g->lastcall > (unsigned int)g->bouncetime*1000 ||
-                g->lastcall == 0 || g->lastcall > timenow) {
+                g->lastcall == 0 ||
+                g->lastcall > timenow) {
                 g->lastcall = timenow;
                 finished = 1;
             }

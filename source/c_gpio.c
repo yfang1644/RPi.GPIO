@@ -29,7 +29,6 @@ SOFTWARE.
 #include <string.h>
 #include "c_gpio.h"
 #include "hard_pwm.h"
-#include "common.h"
 
 volatile unsigned int *gpio_map;
 volatile unsigned int *pwm_map, *clk_map;
@@ -208,7 +207,7 @@ void setup_gpio(int gpio, int direction, int pud)
     *(gpio_map + offset) = reg;
 }
 
-// Contribution by Eric Ptak <trouch@trouch.com>
+/* return gpio function */
 int gpio_function(int gpio)
 {
     int offset = FSEL_OFFSET + (gpio/10);

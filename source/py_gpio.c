@@ -36,7 +36,7 @@ int gpio_direction[54];
 
 struct py_callback
 {
-    unsigned int gpio;
+    int gpio;
     PyObject *py_cb;
     struct py_callback *next;
 };
@@ -191,9 +191,8 @@ int setup_one(int channel, int direction, int pud, int initial)
     if (get_gpio_number(channel, &gpio))
         return 0;
 
-    if (gpio_warnings ||                             // warnings enabled and
-          gpio_direction[gpio] != -1)                  // already in use
-    {
+    // warnings enabled and  pin is already in use
+    if (gpio_warnings && gpio_direction[gpio] != -1) {
         PyErr_WarnEx(NULL, "This channel is already in use, continuing anyway.  Use GPIO.setwarnings(False) to disable warnings.", 1);
     }
 
@@ -493,9 +492,9 @@ static PyObject *py_input_gpio(PyObject *self, PyObject *args)
     if (get_gpio_number(channel, &gpio))
         return NULL;
 
-   // check channel is set up as an input or output
-    if (gpio_direction[gpio] != INPUT && gpio_direction[gpio] != OUTPUT) {
-        PyErr_SetString(PyExc_RuntimeError, "You must setup() the GPIO channel first");
+   // check channel is set up as an
+    if (gpio_direction[gpio] != INPUT) {
+        PyErr_SetString(PyExc_RuntimeError, "You must setup() the GPIO channel as input first");
         return NULL;
     }
 
@@ -559,7 +558,7 @@ static PyObject *py_getmode(PyObject *self, PyObject *args)
     return value;
 }
 
-static unsigned int chan_from_gpio(unsigned int gpio)
+static int chan_from_gpio(int gpio)
 {
     int chan;
     int chans;
@@ -600,7 +599,7 @@ static void run_py_callbacks(int gpio)
     }
 }
 
-static int add_py_callback(unsigned int gpio, PyObject *cb_func)
+static int add_py_callback(int gpio, PyObject *cb_func)
 {
     struct py_callback *new_py_cb;
     struct py_callback *cb = py_callbacks;

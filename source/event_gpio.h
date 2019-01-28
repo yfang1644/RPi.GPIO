@@ -25,12 +25,33 @@ SOFTWARE.
 #define FALLING_EDGE 2
 #define BOTH_EDGE    3
 
+struct gpios
+{
+    int gpio;
+    int value_fd;
+    int exported;
+    int edge;
+    int initial_thread;
+    int initial_wait;
+    int thread_added;
+    int bouncetime;
+    unsigned long long lastcall;
+    struct gpios *next;
+};
+
+// event callbacks
+struct callback
+{
+    int gpio;
+    void (*func)(int gpio);
+    struct callback *next;
+};
+
 int add_edge_detect(int gpio, int edge, int bouncetime);
 void remove_edge_detect(int gpio);
 int add_edge_callback(int gpio, void (*func)(int gpio));
 int event_detected(int gpio);
 int gpio_event_added(int gpio);
-int event_initialise(void);
 void event_cleanup(int gpio);
 void event_cleanup_all(void);
 int blocking_wait_for_edge(int gpio, int edge, int bouncetime, int timeout);

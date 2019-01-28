@@ -30,7 +30,7 @@ pthread_t threads;
 
 struct pwm *pwm_list = NULL;
 
-void remove_pwm(unsigned int gpio)
+void remove_pwm(int gpio)
 {
     struct pwm *p = pwm_list;
     struct pwm *prev = NULL;
@@ -98,7 +98,7 @@ void *pwm_thread(void *threadarg)
     pthread_exit(NULL);
 }
 
-struct pwm *add_new_pwm(unsigned int gpio)
+struct pwm *add_new_pwm(int gpio)
 {
     struct pwm *new_pwm;
 
@@ -115,7 +115,7 @@ struct pwm *add_new_pwm(unsigned int gpio)
     return new_pwm;
 }
 
-struct pwm *find_pwm(unsigned int gpio)
+struct pwm *find_pwm(int gpio)
 /* Return the pwm record for gpio, creating it if it does not exist */
 {
     struct pwm *p = pwm_list;
@@ -137,7 +137,7 @@ struct pwm *find_pwm(unsigned int gpio)
     return NULL;
 }
 
-void pwm_set_duty_cycle(unsigned int gpio, float dutycycle)
+void pwm_set_duty_cycle(int gpio, float dutycycle)
 {
     struct pwm *p;
 
@@ -152,12 +152,11 @@ void pwm_set_duty_cycle(unsigned int gpio, float dutycycle)
     }
 }
 
-void pwm_set_frequency(unsigned int gpio, float freq)
+void pwm_set_frequency(int gpio, float freq)
 {
     struct pwm *p;
 
-    if (freq <= 0.0) // to avoid divide by zero
-    {
+    if (freq <= 0.0) {// to avoid divide by zero
         // btc fixme - error
         return;
     }
@@ -169,7 +168,7 @@ void pwm_set_frequency(unsigned int gpio, float freq)
     }
 }
 
-void pwm_start(unsigned int gpio)
+void pwm_start(int gpio)
 {
     struct pwm *p;
 
@@ -185,13 +184,13 @@ void pwm_start(unsigned int gpio)
     pthread_detach(threads);
 }
 
-void pwm_stop(unsigned int gpio)
+void pwm_stop(int gpio)
 {
     remove_pwm(gpio);
 }
 
 // returns 1 if there is a PWM for this gpio, 0 otherwise
-int pwm_exists(unsigned int gpio)
+int pwm_exists(int gpio)
 {
     struct pwm *p = pwm_list;
 
