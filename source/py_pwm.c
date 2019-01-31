@@ -68,12 +68,11 @@ static int PWM_init(PWMObject *self, PyObject *args, PyObject *kwds)
     self->freq = frequency;
     if(self->gpio == 18 || self->gpio == 19) {
         setup_hard_pwm(self->gpio);
-        setMode(self->gpio, MSMODE);
-        PWM_enable(self->gpio, 0);
+        setMode(self->gpio, PWM_MSMODE);
         setFrequency(self->gpio, self->freq);
     } else {
-		pwm_set_frequency(self->gpio, self->freq);
-	}
+        pwm_set_frequency(self->gpio, self->freq);
+    }
 
     return 0;
 }
@@ -96,9 +95,9 @@ static PyObject *PWM_start(PWMObject *self, PyObject *args)
         setDutyCycle(self->gpio, self->dutycycle);
         PWM_enable(self->gpio, 1);
     } else {
-		pwm_set_duty_cycle(self->gpio, self->dutycycle);
-		pwm_start(self->gpio);
-	}
+        pwm_set_duty_cycle(self->gpio, self->dutycycle);
+        pwm_start(self->gpio);
+    }
 
     Py_RETURN_NONE;
 }
@@ -119,8 +118,8 @@ static PyObject *PWM_ChangeDutyCycle(PWMObject *self, PyObject *args)
     if(self->gpio == 18 || self->gpio == 19) {
         setDutyCycle(self->gpio, dutycycle);
     } else {
-		pwm_set_duty_cycle(self->gpio, self->dutycycle);
-	}
+        pwm_set_duty_cycle(self->gpio, self->dutycycle);
+    }
 
     Py_RETURN_NONE;
 }
@@ -143,8 +142,8 @@ static PyObject *PWM_ChangeFrequency(PWMObject *self, PyObject *args)
     if(self->gpio == 18 || self->gpio == 19) {
         setFrequency(self->gpio, self->freq);
     } else {
-		pwm_set_frequency(self->gpio, self->freq);
-	}
+        pwm_set_frequency(self->gpio, self->freq);
+    }
 
     Py_RETURN_NONE;
 }
@@ -155,8 +154,8 @@ static PyObject *PWM_stop(PWMObject *self, PyObject *args)
     if(self->gpio == 18 || self->gpio == 19) {
         PWM_enable(self->gpio, 0);
     } else {
-		pwm_stop(self->gpio);
-	}
+        pwm_stop(self->gpio);
+    }
 
     Py_RETURN_NONE;
 }

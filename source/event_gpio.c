@@ -374,7 +374,7 @@ void event_cleanup(int gpio)
 
     while (g != NULL) {
         next_gpio = g->next;
-        if ((gpio == -666) || ((int)g->gpio == gpio))
+        if ((gpio == -666) || (g->gpio == gpio))
             remove_edge_detect(g->gpio);
         g = next_gpio;
     }

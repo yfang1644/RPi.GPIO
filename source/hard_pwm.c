@@ -12,23 +12,24 @@ extern volatile unsigned int *gpio_map, *clk_map, *pwm_map;
 static int divisor = 8;
 /* 
 * ===  FUNCTION  =============================================================
-*         Name:  PWM_enable(int pin, bool enable)
+*         Name:  PWM_enable(int gpio, bool enable)
 *  Description:  enable or disable PWM pin
 * ============================================================================
 */
 int PWM_enable(int gpio, _Bool enable)
 {
     int reg = 0;
-    int shift = 0;
-    int pin = gpio - 18;
+    int enable_bit = 0;
+    int pwm = gpio - 18;
 
-    if (pin < 0 || pin > 2)
+    if (pwm < 0 || pwm > 1)
         return ERRPIN;
 
-    shift = PWM_ENABLE + pin*8;
+    enable_bit = PWM_ENABLE << (pwm*8);
     reg = *(pwm_map + PWM_CTL);
-    reg &= ~(1 << shift);
-    reg |= (enable << shift);
+    reg &= ~enable_bit;
+    if (enable)
+        reg |= enable_bit;
 
     *(pwm_map + PWM_CTL) = reg;
 
@@ -59,26 +60,23 @@ int setup_hard_pwm(int gpio)
 
 /* 
 * ===  FUNCTION  =============================================================
-*         Name:  setMode(int pin, int mode)
-*  Description:  set pin to MSMODE(normal) or PWMMODE(distributed)
-*g ============================================================================
+*         Name:  setMode(int gpio, int mode)
+*  Description:  set gpio pin to PWM mode
+* ============================================================================
 */
 int setMode(int gpio, int mode)
 {
     int reg = 0;
     int shift = 0;
-    int pin = gpio - 18;
+    int pwm = gpio - 18;
 
-    if (pin < 0 || pin > 2)
+    if (pwm < 0 || pwm > 1)
         return ERRPIN;
 
-    if((mode != PWMMODE) && (mode != MSMODE))
-        return ERRMODE;
-
-    shift = MSSHIFT + pin*8;
+    shift = mode << (pwm*8);
     reg = *(pwm_map + PWM_CTL);
-    reg &= ~(1 << shift);
-    reg |= (mode << shift);
+    reg &= ~(0xff << (pwm*8));
+    reg |= shift;
 
     *(pwm_map + PWM_CTL) = reg;
     return 0;
@@ -86,23 +84,24 @@ int setMode(int gpio, int mode)
 
 /* 
 * ===  FUNCTION  =============================================================
-*         Name:  setPolarity(int pin, int pol)
+*         Name:  setPolarity(int gpio, int pol)
 *  Description:  set pin to specified polarity (0, normal, 1, inverted)
 * ============================================================================
 */
 int setPolarity(int gpio, int pol)
 {
     int reg = 0;
-    int shift = 0;
-    int pin = gpio - 18;
+    int polarity_bit = 0;
+    int pwm = gpio - 18;
 
-    if(pin < 0 || pin > 2)
+    if(pwm < 0 || pwm > 1)
         return ERRPIN;
 
-    shift = POLARITY + pin*8;
+    polarity_bit = PWM_POLARITY << (pwm*8);
     reg = *(pwm_map + PWM_CTL);
-    reg &= ~(1 << shift);
-    reg |= (pol << shift);
+    reg &= ~polarity_bit;
+    if (pol)
+        reg |= polarity_bit;
 
     *(pwm_map + PWM_CTL) = reg;
     return 0;
@@ -147,7 +146,7 @@ int PWMCLK_reset(int div0)
 
 /* 
 * ===  FUNCTION  =============================================================
-*         Name:  setFrequency(int pin, float frequency)
+*         Name:  setFrequency(int gpio, float frequency)
 *  Description:  set PWM pin frequency between 0.1Hz and 19.2MHz
 * ============================================================================
 */
@@ -155,16 +154,16 @@ int setFrequency(int gpio, float frequency)
 {
     int counts, bits;
     float f;
-    int pin = gpio - 18;
-    if (pin < 0 || pin > 2)
+    int pwm = gpio - 18;
+    if (pwm < 0 || pwm > 1)
         return ERRPIN;
 
     /* make sure the frequency is valid */
     if (frequency < 0 || frequency > 19200000.0f)
         return ERRFREQ;
 
-    counts = *(pwm_map + PWM_RNG(pin));
-    bits = *(pwm_map + PWM_DAT(pin));
+    counts = *(pwm_map + PWM_RNG(pwm));
+    bits = *(pwm_map + PWM_DAT(pwm));
 
     if (counts)
         f = (float)bits/counts;
@@ -173,31 +172,31 @@ int setFrequency(int gpio, float frequency)
 
     counts = 19200000.0/divisor/frequency;
     bits = counts * f;
-    *(pwm_map + PWM_RNG(pin)) = counts;
-    *(pwm_map + PWM_DAT(pin)) = bits;
+    *(pwm_map + PWM_RNG(pwm)) = counts;
+    *(pwm_map + PWM_DAT(pwm)) = bits;
 
     return 0;
 }
 
 /* 
 * ===  FUNCTION  =============================================================
-*         Name:  setDutyCycle(int pin, float dutycycle)
+*         Name:  setDutyCycle(int gpio, float dutycycle)
 *  Description:  set duty cycle from 0% to 100%
 * ============================================================================
 */
 int setDutyCycle(int gpio, float dutycycle)
 {
     int counts, bits;
-    int pin = gpio - 18;
-    if (pin < 0 || pin > 2)
+    int pwm = gpio - 18;
+    if (pwm < 0 || pwm > 1)
         return ERRPIN;
 
     if(dutycycle < 0 || dutycycle > 100.0)
         return ERRDUTY;
-    counts = *(pwm_map + PWM_RNG(pin));
+    counts = *(pwm_map + PWM_RNG(pwm));
 
     bits = counts * dutycycle/100.0;
-    *(pwm_map + PWM_DAT(pin)) = bits;
+    *(pwm_map + PWM_DAT(pwm)) = bits;
 
     return 0;
 }
@@ -222,13 +221,13 @@ void hardwarePWM_stop()
     }
 
     /* reset GPIO18 and GPIO19 to GPIO INPUT */
-    *(gpio_map+1) &= ~(7 << 24);
-    *(gpio_map+1) &= ~(7 << 27);
+    *(gpio_map+FSEL_OFFSET+1) &= ~(7 << 24);
+    *(gpio_map+FSEL_OFFSET+1) &= ~(7 << 27);
 }
 
 /* 
 * ===  FUNCTION  =============================================================
-*         Name:  PWM_init()
+*         Name:  hardwarePWM_init()
 *  Description:  map registers, set initial divisor
 *                without output signal
 * ============================================================================

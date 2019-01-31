@@ -1,10 +1,6 @@
 #ifndef _HARD_PWM_H
 #define _HARD_PWM_H
 
-/* Two PWM modes */
-#define PWMMODE     0
-#define MSMODE      1
-
 /* error code */
 
 #define ERRFREQ     1
@@ -19,10 +15,13 @@
 
 /* PWM registers */
 #define PWM_CTL     0
-#    define   PWM_ENABLE 0
-#    define   MODESHIFT  1
-#    define   MSSHIFT    7
-#    define   POLARITY   4
+#    define   PWM_MSMODE    (1<<7)
+#    define   PWM_USEFIFO   (1<<5)
+#    define   PWM_POLARITY  (1<<4)
+#    define   PWM_SBIT      (1<<3)
+#    define   PWM_REPEAT    (1<<2)
+#    define   PWM_SERIAL    (1<<1)
+#    define   PWM_ENABLE    (1<<0)
 
 #define PWM_RNG(x)    (4 + 4*(x))
 #define PWM_DAT(x)    (5 + 4*(x))
