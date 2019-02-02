@@ -28,10 +28,9 @@ SOFTWARE.
 #include <sys/mman.h>
 #include <string.h>
 #include "c_gpio.h"
-#include "hard_pwm.h"
 
-volatile unsigned int *gpio_map;
-volatile unsigned int *pwm_map, *clk_map;
+volatile uint32_t *gpio_map=NULL;
+uint32_t peri_base = 0;
 
 void short_wait(int cycle)
 {
@@ -42,8 +41,10 @@ void short_wait(int cycle)
     }
 }
 
-unsigned int *mapRegAddr(unsigned int baseAddr)
+void *mapRegAddr(unsigned int baseAddr)
 {
+    uint32_t pagemask = ~0UL ^ (getpagesize() - 1);
+    uint32_t offsetmask = getpagesize() - 1;
     int mem_fd;
     void *regAddrMap = MAP_FAILED;
 
@@ -56,16 +57,15 @@ unsigned int *mapRegAddr(unsigned int baseAddr)
                       PROT_READ|PROT_WRITE,
                       MAP_SHARED,
                       mem_fd,
-                      baseAddr);
+                      baseAddr & pagemask);
 
     close(mem_fd);
 
-    return (unsigned int *)regAddrMap;
+    return (char *)regAddrMap + (baseAddr & offsetmask);
 }
 
 int setup(void)
 {
-    uint32_t peri_base = 0;
     unsigned char buf[4];
     FILE *fp;
     char buffer[1024];
@@ -86,7 +86,7 @@ int setup(void)
             return SETUP_CPUINFO_FAIL;
 
         while(!feof(fp) && !found && fgets(buffer, sizeof(buffer), fp)) {
-            sscanf(buffer, "Hardware	: %s", hardware);
+            sscanf(buffer, "Hardware : %s", hardware);
             if (strcmp(hardware, "BCM2708") == 0 || strcmp(hardware, "BCM2835") == 0) {
                 // pi 1 hardware
                 peri_base = BCM2708_PERI_BASE_DEFAULT;
@@ -105,11 +105,9 @@ int setup(void)
     if (!peri_base)
         return SETUP_NOT_RPI_FAIL;
 
-    gpio_map = mapRegAddr(peri_base + GPIO_BASE_OFFSET);
-    pwm_map = mapRegAddr(peri_base + PWM_BASE_OFFSET);
-    clk_map = mapRegAddr(peri_base + CLK_BASE_OFFSET);
+    if (gpio_map == NULL)
+        gpio_map = mapRegAddr(peri_base + GPIO_BASE_OFFSET);
 
-    hardwarePWM_init();
     return SETUP_OK;
 }
 
@@ -244,6 +242,6 @@ int input_gpio(int gpio)
 
 void cleanup(void)
 {
-    hardwarePWM_stop();
-    munmap((void *)gpio_map, BLOCK_SIZE);
+    if(gpio_map != NULL)
+        munmap((void *)gpio_map, BLOCK_SIZE);
 }

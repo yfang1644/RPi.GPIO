@@ -23,18 +23,26 @@
 #    define   PWM_SERIAL    (1<<1)
 #    define   PWM_ENABLE    (1<<0)
 
+#define PWM_DMAC    2
 #define PWM_RNG(x)    (4 + 4*(x))
 #define PWM_DAT(x)    (5 + 4*(x))
+#define PWM_FIF1    6
 
 #define PWMCLK_CNTL 40
 #define PWMCLK_DIV  41
+
+#define BCM_PASSWD  0x5A000000
+#define CLK_BUSY    (1<<7)
+#define CLK_KILL    (1<<5)
+#define CLK_ENABLE  (1<<4)
+#define CLK_OSC     (1<<0)
 
 int setFrequency(int gpio, float frequency);
 
 int setDutyCycle(int gpio, float dutycycle);
 
 int setMode(int gpio, int mode);
-int setPolarity(int gpio, int pol);
+int setPolarity(int gpio, _Bool pol);
 int PWM_enable(int gpio, _Bool enable);
 
 int setup_hard_pwm(int gpio);

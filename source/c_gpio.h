@@ -23,7 +23,11 @@ SOFTWARE.
 #ifndef _C_GPIO_H
 #define _C_GPIO_H
 
-unsigned int *mapRegAddr(unsigned int baseAddr);
+#include <stdint.h>
+
+extern uint32_t peri_base;
+
+void *mapRegAddr(unsigned int baseAddr);
 
 int setup(void);
 void setup_gpio(int gpio, int direction, int pud);

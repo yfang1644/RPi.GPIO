@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -7,9 +8,10 @@
 #include "c_gpio.h"
 #include "hard_pwm.h"
 
-extern volatile unsigned int *gpio_map, *clk_map, *pwm_map;
+extern volatile uint32_t *gpio_map;
+volatile uint32_t *clk_map=NULL, *pwm_map=NULL;
 
-static int divisor = 8;
+static int divisor = 2;
 /* 
 * ===  FUNCTION  =============================================================
 *         Name:  PWM_enable(int gpio, bool enable)
@@ -88,7 +90,7 @@ int setMode(int gpio, int mode)
 *  Description:  set pin to specified polarity (0, normal, 1, inverted)
 * ============================================================================
 */
-int setPolarity(int gpio, int pol)
+int setPolarity(int gpio, _Bool pol)
 {
     int reg = 0;
     int polarity_bit = 0;
@@ -113,11 +115,6 @@ int setPolarity(int gpio, int pol)
 *  Description:  set PWM clock.
 * ============================================================================
 */
-#define BCM_PASSWD  0x5A000000
-#define CLK_OSC     0     
-#define CLK_ENABLE  4
-#define CLK_KILL    5
-#define CLK_BUSY    7
 int PWMCLK_reset(int div0)
 {
     /* put the PWM peripheral registers in their original state */
@@ -129,17 +126,17 @@ int PWMCLK_reset(int div0)
 
     /* stop clock and waiting for busy flag doesn't work,
      * so kill clock  first. '5A' is CLK password */
-    *(clk_map + PWMCLK_CNTL) = BCM_PASSWD | (1 << CLK_KILL);
+    *(clk_map + PWMCLK_CNTL) = BCM_PASSWD | CLK_KILL;
     usleep(2);  
 
     // wait until busy flag is set 
-    while ((*(clk_map + PWMCLK_CNTL)) & (1<<CLK_BUSY)) { }   
+    while ((*(clk_map + PWMCLK_CNTL)) & CLK_BUSY)   ;
 
     /* set divisor */
     *(clk_map + PWMCLK_DIV) = BCM_PASSWD | (div0 << 12);
 
     /* source=osc and enable clock */
-    *(clk_map + PWMCLK_CNTL) = BCM_PASSWD | (1<<CLK_ENABLE) | (1<<CLK_OSC);
+    *(clk_map + PWMCLK_CNTL) = BCM_PASSWD | CLK_ENABLE | CLK_OSC;
 
     return 0;
 }
@@ -234,5 +231,9 @@ void hardwarePWM_stop()
 */
 void hardwarePWM_init()
 {
+    if (pwm_map == NULL)
+        pwm_map = mapRegAddr(peri_base + PWM_BASE_OFFSET);
+    if (clk_map == NULL)
+        clk_map = mapRegAddr(peri_base + CLK_BASE_OFFSET);
     PWMCLK_reset(divisor);
 }

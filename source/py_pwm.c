@@ -67,6 +67,7 @@ static int PWM_init(PWMObject *self, PyObject *args, PyObject *kwds)
 
     self->freq = frequency;
     if(self->gpio == 18 || self->gpio == 19) {
+        hardwarePWM_init();
         setup_hard_pwm(self->gpio);
         setMode(self->gpio, PWM_MSMODE);
         setFrequency(self->gpio, self->freq);
@@ -163,6 +164,9 @@ static PyObject *PWM_stop(PWMObject *self, PyObject *args)
 // deallocation method
 static void PWM_dealloc(PWMObject *self)
 {
+    if(self->gpio == 18 || self->gpio == 19) {
+        hardwarePWM_stop();
+    }
     pwm_stop(self->gpio);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
