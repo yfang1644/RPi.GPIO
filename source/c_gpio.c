@@ -49,7 +49,7 @@ void *mapRegAddr(unsigned int baseAddr)
     void *regAddrMap = MAP_FAILED;
 
     // mmap the GPIO memory registers
-    if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0)
+    if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC)) < 0)
         return MAP_FAILED;
 
     regAddrMap = mmap(NULL,
