@@ -12,6 +12,7 @@ extern volatile uint32_t *gpio_map;
 volatile uint32_t *clk_map=NULL, *pwm_map=NULL;
 
 static int divisor = 2;
+
 /* 
 * ===  FUNCTION  =============================================================
 *         Name:  PWM_enable(int gpio, bool enable)
@@ -207,19 +208,18 @@ int setDutyCycle(int gpio, float dutycycle)
 void hardwarePWM_stop()
 {
     PWMCLK_reset(0);
-    if(munmap((void*)pwm_map, BLOCK_SIZE) < 0){
-        perror("munmap (pwm)");
-        exit(1);
+    if (pwm_map != NULL) {
+        munmap((void*)pwm_map, BLOCK_SIZE);
+        pwm_map = NULL;
     }
 
-    if(munmap((void*)clk_map, BLOCK_SIZE) < 0){
-        perror("munmap (clk)");
-        exit(1);
+    if(clk_map != NULL) {
+        munmap((void*)clk_map, BLOCK_SIZE);
+        clk_map = NULL;
     }
-
     /* reset GPIO18 and GPIO19 to GPIO INPUT */
-    *(gpio_map+FSEL_OFFSET+1) &= ~(7 << 24);
-    *(gpio_map+FSEL_OFFSET+1) &= ~(7 << 27);
+    setup_gpio(18, INPUT, PUD_OFF);
+    setup_gpio(19, INPUT, PUD_OFF);
 }
 
 /* 
@@ -233,7 +233,8 @@ void hardwarePWM_init()
 {
     if (pwm_map == NULL)
         pwm_map = mapRegAddr(peri_base + PWM_BASE_OFFSET);
-    if (clk_map == NULL)
+    if (clk_map == NULL) {
         clk_map = mapRegAddr(peri_base + CLK_BASE_OFFSET);
-    PWMCLK_reset(divisor);
+        PWMCLK_reset(divisor);
+    }
 }

@@ -240,8 +240,13 @@ int input_gpio(int gpio)
    return value;
 }
 
+void hardwarePWM_stop(void);
+
 void cleanup(void)
 {
-    if(gpio_map != NULL)
+    hardwarePWM_stop();
+    if(gpio_map != NULL) {
         munmap((void *)gpio_map, BLOCK_SIZE);
+        gpio_map = NULL;
+    }
 }

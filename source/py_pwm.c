@@ -164,9 +164,6 @@ static PyObject *PWM_stop(PWMObject *self, PyObject *args)
 // deallocation method
 static void PWM_dealloc(PWMObject *self)
 {
-    if(self->gpio == 18 || self->gpio == 19) {
-        hardwarePWM_stop();
-    }
     pwm_stop(self->gpio);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
