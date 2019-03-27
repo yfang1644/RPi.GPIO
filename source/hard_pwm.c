@@ -207,8 +207,8 @@ int setDutyCycle(int gpio, float dutycycle)
 */
 void hardwarePWM_stop()
 {
-    PWMCLK_reset(0);
     if (pwm_map != NULL) {
+        PWMCLK_reset(0);
         munmap((void*)pwm_map, BLOCK_SIZE);
         pwm_map = NULL;
     }

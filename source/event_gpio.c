@@ -36,7 +36,7 @@ struct gpios *gpio_list = NULL;
 
 struct callback *callbacks = NULL;
 
-int event_occurred[54] = { 0 };
+int event_occurred[54];
 int thread_running = 0;
 int epfd_thread = -1;
 int epfd_blocking = -1;
@@ -201,8 +201,10 @@ int gpio_event_added(int gpio)
 {
     struct gpios *g = gpio_list;
     while (g != NULL) {
-        if (g->gpio == gpio)
+        if (g->gpio == gpio) {
+            event_occurred[gpio] = 0;
             return g->edge;
+        }
         g = g->next;
     }
     return NO_EDGE;
