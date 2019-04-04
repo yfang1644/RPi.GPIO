@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2015 Ben Croston
+Copyright (c) 2013-2014 Ben Croston
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -27,14 +27,11 @@ SOFTWARE.
 
 struct gpios
 {
-    int gpio;
+    unsigned int gpio;
     int value_fd;
     int exported;
-    int edge;
-    int initial_thread;
-    int initial_wait;
-    int thread_added;
-    int bouncetime;
+    int initial;
+    unsigned int bouncetime;
     unsigned long long lastcall;
     struct gpios *next;
 };
@@ -42,16 +39,18 @@ struct gpios
 // event callbacks
 struct callback
 {
-    int gpio;
-    void (*func)(int gpio);
+    unsigned int gpio;
+    void (*func)(unsigned int gpio);
     struct callback *next;
 };
 
-int add_edge_detect(int gpio, int edge, int bouncetime);
-void remove_edge_detect(int gpio);
-int add_edge_callback(int gpio, void (*func)(int gpio));
-int event_detected(int gpio);
-int gpio_event_added(int gpio);
-void event_cleanup(int gpio);
+int add_edge_detect(unsigned int gpio, unsigned int edge, unsigned int bouncetime);
+void remove_edge_detect(unsigned int gpio);
+int add_edge_callback(unsigned int gpio, void (*func)(unsigned int gpio));
+int event_detected(unsigned int gpio);
+int gpio_event_added(unsigned int gpio);
+int event_initialise(void);
+void event_cleanup(unsigned int gpio);
 void event_cleanup_all(void);
-int blocking_wait_for_edge(int gpio, int edge, int bouncetime, int timeout);
+int blocking_wait_for_edge(unsigned int gpio, unsigned int edge);
+unsigned int gpioToSysPin(unsigned int gpio);

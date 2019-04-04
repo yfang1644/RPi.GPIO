@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018 Ben Croston
+Copyright (c) 2013 Ben Croston
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -25,12 +25,11 @@ SOFTWARE.
 #include <time.h>
 #include "c_gpio.h"
 #include "soft_pwm.h"
-
 pthread_t threads;
 
 struct pwm *pwm_list = NULL;
 
-void remove_pwm(int gpio)
+void remove_pwm(unsigned int gpio)
 {
     struct pwm *p = pwm_list;
     struct pwm *prev = NULL;
@@ -45,7 +44,7 @@ void remove_pwm(int gpio)
             }
             temp = p;
             p = p->next;
-            temp->running = 0; // signal the thread to stop. The thread will free() the pwm struct when it's done with it.
+            free(temp);
         } else {
             prev = p;
             p = p->next;
@@ -94,11 +93,11 @@ void *pwm_thread(void *threadarg)
 
     // clean up
     output_gpio(p->gpio, 0);
-    free(p);
+    remove_pwm(p->gpio);
     pthread_exit(NULL);
 }
 
-struct pwm *add_new_pwm(int gpio)
+struct pwm *add_new_pwm(unsigned int gpio)
 {
     struct pwm *new_pwm;
 
@@ -115,8 +114,7 @@ struct pwm *add_new_pwm(int gpio)
     return new_pwm;
 }
 
-struct pwm *find_pwm(int gpio)
-/* Return the pwm record for gpio, creating it if it does not exist */
+struct pwm *find_pwm(unsigned int gpio)
 {
     struct pwm *p = pwm_list;
 
@@ -137,7 +135,7 @@ struct pwm *find_pwm(int gpio)
     return NULL;
 }
 
-void pwm_set_duty_cycle(int gpio, float dutycycle)
+void pwm_set_duty_cycle(unsigned int gpio, float dutycycle)
 {
     struct pwm *p;
 
@@ -152,7 +150,7 @@ void pwm_set_duty_cycle(int gpio, float dutycycle)
     }
 }
 
-void pwm_set_frequency(int gpio, float freq)
+void pwm_set_frequency(unsigned int gpio, float freq)
 {
     struct pwm *p;
 
@@ -168,7 +166,7 @@ void pwm_set_frequency(int gpio, float freq)
     }
 }
 
-void pwm_start(int gpio)
+void pwm_start(unsigned int gpio)
 {
     struct pwm *p;
 
@@ -181,25 +179,12 @@ void pwm_start(int gpio)
         p->running = 0;
         return;
     }
-    pthread_detach(threads);
 }
 
-void pwm_stop(int gpio)
+void pwm_stop(unsigned int gpio)
 {
-    remove_pwm(gpio);
-}
+    struct pwm *p;
 
-// returns 1 if there is a PWM for this gpio, 0 otherwise
-int pwm_exists(int gpio)
-{
-    struct pwm *p = pwm_list;
-
-    while (p != NULL) {
-        if (p->gpio == gpio) {
-            return 1;
-        } else {
-            p = p->next;
-        }
-    }
-    return 0;
+    if ((p = find_pwm(gpio)) != NULL)
+        p->running = 0;
 }

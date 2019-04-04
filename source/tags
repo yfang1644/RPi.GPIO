@@ -1,0 +1,262 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ALT0	c_gpio.h	72;"	d
+ALT5	c_gpio.h	73;"	d
+BCM	common.h	27;"	d
+BCM2708_PERI_BASE_DEFAULT	c_gpio.h	44;"	d
+BCM2709_PERI_BASE_DEFAULT	c_gpio.h	45;"	d
+BCM_PASSWD	hard_pwm.h	34;"	d
+BLOCK_SIZE	c_gpio.h	83;"	d
+BOARD	common.h	26;"	d
+BOTH_EDGE	event_gpio.h	26;"	d
+CLK_BASE_OFFSET	hard_pwm.h	14;"	d
+CLK_BUSY	hard_pwm.h	35;"	d
+CLK_ENABLE	hard_pwm.h	37;"	d
+CLK_KILL	hard_pwm.h	36;"	d
+CLK_OSC	hard_pwm.h	38;"	d
+CLR_OFFSET	c_gpio.h	51;"	d
+CPUINFO_H	cpuinfo.h	24;"	d
+ERRCOUNT	hard_pwm.h	7;"	d
+ERRDUTY	hard_pwm.h	8;"	d
+ERRFREQ	hard_pwm.h	6;"	d
+ERRMODE	hard_pwm.h	9;"	d
+ERRPIN	hard_pwm.h	10;"	d
+EVENT_DETECT_OFFSET	c_gpio.h	53;"	d
+FALLING_EDGE	event_gpio.h	25;"	d
+FALLING_ED_OFFSET	c_gpio.h	55;"	d
+FSEL_OFFSET	c_gpio.h	49;"	d
+GPIO_BASE_OFFSET	c_gpio.h	47;"	d
+HIGH	c_gpio.h	75;"	d
+HIGH_DETECT_OFFSET	c_gpio.h	56;"	d
+HWPWM	c_gpio.h	70;"	d
+I2C	common.h	30;"	d
+INPUT	c_gpio.h	68;"	d
+LOW	c_gpio.h	76;"	d
+LOW_DETECT_OFFSET	c_gpio.h	57;"	d
+MODE_UNKNOWN	common.h	25;"	d
+NO_EDGE	event_gpio.h	23;"	d
+OUTPUT	c_gpio.h	69;"	d
+PAGE_SIZE	c_gpio.h	82;"	d
+PINLEVEL_OFFSET	c_gpio.h	52;"	d
+PUD_DOWN	c_gpio.h	79;"	d
+PUD_OFF	c_gpio.h	78;"	d
+PUD_UP	c_gpio.h	80;"	d
+PULLUPDNCLK_OFFSET	c_gpio.h	59;"	d
+PULLUPDN_OFFSET	c_gpio.h	58;"	d
+PWM	common.h	31;"	d
+PWMCLK_CNTL	hard_pwm.h	31;"	d
+PWMCLK_DIV	hard_pwm.h	32;"	d
+PWMCLK_reset	hard_pwm.c	/^int PWMCLK_reset(int div0)$/;"	f
+PWMObject	py_pwm.c	/^} PWMObject;$/;"	t	typeref:struct:__anon2	file:
+PWMType	py_pwm.c	/^PyTypeObject PWMType = {$/;"	v
+PWMType	py_pwm.h	/^PyTypeObject PWMType;$/;"	v
+PWM_BASE_OFFSET	hard_pwm.h	13;"	d
+PWM_CTL	hard_pwm.h	17;"	d
+PWM_ChangeDutyCycle	py_pwm.c	/^static PyObject *PWM_ChangeDutyCycle(PWMObject *self, PyObject *args)$/;"	f	file:
+PWM_ChangeFrequency	py_pwm.c	/^static PyObject *PWM_ChangeFrequency(PWMObject *self, PyObject *args)$/;"	f	file:
+PWM_DAT	hard_pwm.h	28;"	d
+PWM_DMAC	hard_pwm.h	26;"	d
+PWM_ENABLE	hard_pwm.h	24;"	d
+PWM_FIF1	hard_pwm.h	29;"	d
+PWM_MSMODE	hard_pwm.h	18;"	d
+PWM_POLARITY	hard_pwm.h	20;"	d
+PWM_REPEAT	hard_pwm.h	22;"	d
+PWM_RNG	hard_pwm.h	27;"	d
+PWM_SBIT	hard_pwm.h	21;"	d
+PWM_SERIAL	hard_pwm.h	23;"	d
+PWM_USEFIFO	hard_pwm.h	19;"	d
+PWM_dealloc	py_pwm.c	/^static void PWM_dealloc(PWMObject *self)$/;"	f	file:
+PWM_enable	hard_pwm.c	/^int PWM_enable(int gpio, _Bool enable)$/;"	f
+PWM_init	py_pwm.c	/^static int PWM_init(PWMObject *self, PyObject *args, PyObject *kwds)$/;"	f	file:
+PWM_init_PWMType	py_pwm.c	/^PyTypeObject *PWM_init_PWMType(void)$/;"	f
+PWM_methods	py_pwm.c	/^PWM_methods[] = {$/;"	v	file:
+PWM_start	py_pwm.c	/^static PyObject *PWM_start(PWMObject *self, PyObject *args)$/;"	f	file:
+PWM_stop	py_pwm.c	/^static PyObject *PWM_stop(PWMObject *self, PyObject *args)$/;"	f	file:
+PY_EVENT_CONST_OFFSET	constants.h	24;"	d
+PY_PUD_CONST_OFFSET	constants.h	23;"	d
+PyInit__GPIO	py_gpio.c	/^PyMODINIT_FUNC PyInit__GPIO(void)$/;"	f
+RISING_EDGE	event_gpio.h	24;"	d
+RISING_ED_OFFSET	c_gpio.h	54;"	d
+SERIAL	common.h	28;"	d
+SETUP_CPUINFO_FAIL	c_gpio.h	65;"	d
+SETUP_DEVMEM_FAIL	c_gpio.h	62;"	d
+SETUP_MALLOC_FAIL	c_gpio.h	63;"	d
+SETUP_MMAP_FAIL	c_gpio.h	64;"	d
+SETUP_NOT_RPI_FAIL	c_gpio.h	66;"	d
+SETUP_OK	c_gpio.h	61;"	d
+SET_OFFSET	c_gpio.h	50;"	d
+SPI	common.h	29;"	d
+_C_GPIO_H	c_gpio.h	24;"	d
+_HARD_PWM_H	hard_pwm.h	2;"	d
+_SOFT_PWM_H	soft_pwm.h	26;"	d
+add_edge_callback	event_gpio.c	/^int add_edge_callback(int gpio, void (*func)(int gpio))$/;"	f
+add_edge_detect	event_gpio.c	/^int add_edge_detect(int gpio, int edge, int bouncetime)$/;"	f
+add_new_pwm	soft_pwm.c	/^struct pwm *add_new_pwm(int gpio)$/;"	f
+add_py_callback	py_gpio.c	/^static int add_py_callback(int gpio, PyObject *cb_func)$/;"	f	file:
+basetime	soft_pwm.h	/^    float basetime;$/;"	m	struct:pwm
+bcm	constants.h	/^PyObject *bcm;$/;"	v
+blocking_wait_for_edge	event_gpio.c	/^int blocking_wait_for_edge(int gpio, int edge, int bouncetime, int timeout)$/;"	f
+board	constants.h	/^PyObject *board;$/;"	v
+board_info	py_gpio.c	/^static PyObject *board_info;$/;"	v	file:
+both_edge	constants.h	/^PyObject *both_edge;$/;"	v
+bouncetime	event_gpio.h	/^    int bouncetime;$/;"	m	struct:gpios
+calculate_times	soft_pwm.c	/^void calculate_times(struct pwm *p)$/;"	f
+callback	event_gpio.h	/^struct callback$/;"	s
+callback_exists	event_gpio.c	/^int callback_exists(int gpio)$/;"	f
+callbacks	event_gpio.c	/^struct callback *callbacks = NULL;$/;"	v	typeref:struct:callback
+chan_from_gpio	py_gpio.c	/^static int chan_from_gpio(int gpio)$/;"	f	file:
+check_gpio_priv	common.c	/^int check_gpio_priv(void)$/;"	f
+cleanup	c_gpio.c	/^void cleanup(void)$/;"	f
+cleanup_one	py_gpio.c	/^int cleanup_one(int gpio)$/;"	f
+clk_map	hard_pwm.c	/^volatile uint32_t *clk_map=NULL, *pwm_map=NULL;$/;"	v
+define_constants	constants.c	/^void define_constants(PyObject *module)$/;"	f
+delete_gpio	event_gpio.c	/^void delete_gpio(int gpio)$/;"	f
+divisor	hard_pwm.c	/^static int divisor = 2;$/;"	v	file:
+dutycycle	py_pwm.c	/^    float dutycycle;$/;"	m	struct:__anon2	file:
+dutycycle	soft_pwm.h	/^    float dutycycle;$/;"	m	struct:pwm
+edge	event_gpio.h	/^    int edge;$/;"	m	struct:gpios
+epfd_blocking	event_gpio.c	/^int epfd_blocking = -1;$/;"	v
+epfd_thread	event_gpio.c	/^int epfd_thread = -1;$/;"	v
+event_cleanup	event_gpio.c	/^void event_cleanup(int gpio)$/;"	f
+event_cleanup_all	event_gpio.c	/^void event_cleanup_all(void)$/;"	f
+event_detected	event_gpio.c	/^int event_detected(int gpio)$/;"	f
+event_occurred	event_gpio.c	/^int event_occurred[54] = { 0 };$/;"	v
+eventdetected	c_gpio.c	/^int eventdetected(int gpio)$/;"	f
+exported	event_gpio.h	/^    int exported;$/;"	m	struct:gpios
+falling_edge	constants.h	/^PyObject *falling_edge;$/;"	v
+find_pwm	soft_pwm.c	/^struct pwm *find_pwm(int gpio)$/;"	f
+freq	py_pwm.c	/^    float freq;$/;"	m	struct:__anon2	file:
+freq	soft_pwm.h	/^    float freq;$/;"	m	struct:pwm
+full_sleep	soft_pwm.c	/^void full_sleep(struct timespec *req)$/;"	f
+func	event_gpio.h	/^    void (*func)(int gpio);$/;"	m	struct:callback
+get_gpio	event_gpio.c	/^struct gpios *get_gpio(int gpio)$/;"	f
+get_gpio_from_value_fd	event_gpio.c	/^struct gpios *get_gpio_from_value_fd(int fd)$/;"	f
+get_gpio_number	common.c	/^int get_gpio_number(int channel, int *gpio)$/;"	f
+get_rpi_info	cpuinfo.c	/^int get_rpi_info(rpi_info *info)$/;"	f
+gpio	event_gpio.h	/^    int gpio;$/;"	m	struct:callback
+gpio	event_gpio.h	/^    int gpio;$/;"	m	struct:gpios
+gpio	py_gpio.c	/^    int gpio;$/;"	m	struct:py_callback	file:
+gpio	py_pwm.c	/^    int gpio;$/;"	m	struct:__anon2	file:
+gpio	soft_pwm.h	/^    int gpio;$/;"	m	struct:pwm
+gpio_direction	py_gpio.c	/^int gpio_direction[54];$/;"	v
+gpio_event_added	event_gpio.c	/^int gpio_event_added(int gpio)$/;"	f
+gpio_export	event_gpio.c	/^int gpio_export(int gpio)$/;"	f
+gpio_function	c_gpio.c	/^int gpio_function(int gpio)$/;"	f
+gpio_list	event_gpio.c	/^struct gpios *gpio_list = NULL;$/;"	v	typeref:struct:gpios
+gpio_map	c_gpio.c	/^volatile uint32_t *gpio_map=NULL;$/;"	v
+gpio_mode	common.c	/^int gpio_mode = MODE_UNKNOWN;$/;"	v
+gpio_set_edge	event_gpio.c	/^int gpio_set_edge(int gpio, int edge)$/;"	f
+gpio_unexport	event_gpio.c	/^int gpio_unexport(int gpio)$/;"	f
+gpio_warnings	py_gpio.c	/^static int gpio_warnings = 1;$/;"	v	file:
+gpios	event_gpio.h	/^struct gpios$/;"	s
+hardwarePWM_init	hard_pwm.c	/^void hardwarePWM_init()$/;"	f
+hardwarePWM_stop	hard_pwm.c	/^void hardwarePWM_stop()$/;"	f
+high	constants.h	/^PyObject *high;$/;"	v
+i2c	constants.h	/^PyObject *i2c;$/;"	v
+initial_thread	event_gpio.h	/^    int initial_thread;$/;"	m	struct:gpios
+initial_wait	event_gpio.h	/^    int initial_wait;$/;"	m	struct:gpios
+input	constants.h	/^PyObject *input;$/;"	v
+input_gpio	c_gpio.c	/^int input_gpio(int gpio)$/;"	f
+lastcall	event_gpio.h	/^    unsigned long long lastcall;$/;"	m	struct:gpios
+low	constants.h	/^PyObject *low;$/;"	v
+manufacturer	cpuinfo.h	/^   char *manufacturer;$/;"	m	struct:__anon1
+mapRegAddr	c_gpio.c	/^void *mapRegAddr(unsigned int baseAddr)$/;"	f
+mmap_gpio_mem	py_gpio.c	/^static int mmap_gpio_mem(void)$/;"	f	file:
+module_setup	common.c	/^int module_setup = 0;$/;"	v
+module_setup	common.h	/^int module_setup;$/;"	v
+moduledocstring	py_gpio.c	/^static const char moduledocstring[] = "GPIO functionality of a Raspberry Pi using Python";$/;"	v	file:
+new_gpio	event_gpio.c	/^struct gpios *new_gpio(int gpio)$/;"	f
+next	event_gpio.h	/^    struct callback *next;$/;"	m	struct:callback	typeref:struct:callback::callback
+next	event_gpio.h	/^    struct gpios *next;$/;"	m	struct:gpios	typeref:struct:gpios::gpios
+next	py_gpio.c	/^    struct py_callback *next;$/;"	m	struct:py_callback	typeref:struct:py_callback::py_callback	file:
+next	soft_pwm.h	/^    struct pwm *next;$/;"	m	struct:pwm	typeref:struct:pwm::pwm
+open_value_file	event_gpio.c	/^int open_value_file(int gpio)$/;"	f
+output	constants.h	/^PyObject *output;$/;"	v
+output_gpio	c_gpio.c	/^void output_gpio(int gpio, int value)$/;"	f
+output_one	py_gpio.c	/^int output_one(int channel, int value)$/;"	f
+p1_revision	cpuinfo.h	/^   int p1_revision;$/;"	m	struct:__anon1
+peri_base	c_gpio.c	/^uint32_t peri_base = 0;$/;"	v
+pin_to_gpio	common.h	/^const int (*pin_to_gpio)[41];$/;"	v
+pin_to_gpio_rev1	common.c	/^const int pin_to_gpio_rev1[41] = {-1, -1, -1, 0, -1, 1, -1, 4, 14, -1, 15, 17, 18, 21, -1, 22, 23, -1, 24, 10, -1, 9, 25, 11, 8, -1, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };$/;"	v
+pin_to_gpio_rev1	common.h	/^const int pin_to_gpio_rev1[41];$/;"	v
+pin_to_gpio_rev2	common.c	/^const int pin_to_gpio_rev2[41] = {-1, -1, -1, 2, -1, 3, -1, 4, 14, -1, 15, 17, 18, 27, -1, 22, 23, -1, 24, 10, -1, 9, 25, 11, 8, -1, 7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };$/;"	v
+pin_to_gpio_rev2	common.h	/^const int pin_to_gpio_rev2[41];$/;"	v
+pin_to_gpio_rev3	common.c	/^const int pin_to_gpio_rev3[41] = {-1, -1, -1, 2, -1, 3, -1, 4, 14, -1, 15, 17, 18, 27, -1, 22, 23, -1, 24, 10, -1, 9, 25, 11, 8, -1, 7,  0,  1, 5, -1, 6, 12, 13, -1, 19, 16, 26, 20, -1, 21 };$/;"	v
+pin_to_gpio_rev3	common.h	/^const int pin_to_gpio_rev3[41];$/;"	v
+poll_thread	event_gpio.c	/^void *poll_thread(void *threadarg)$/;"	f
+processor	cpuinfo.h	/^   char *processor;$/;"	m	struct:__anon1
+pud_down	constants.h	/^PyObject *pud_down;$/;"	v
+pud_off	constants.h	/^PyObject *pud_off;$/;"	v
+pud_up	constants.h	/^PyObject *pud_up;$/;"	v
+pwm	constants.h	/^PyObject *pwm;$/;"	v
+pwm	soft_pwm.h	/^struct pwm$/;"	s
+pwm_exists	soft_pwm.c	/^int pwm_exists(int gpio)$/;"	f
+pwm_list	soft_pwm.c	/^struct pwm *pwm_list = NULL;$/;"	v	typeref:struct:pwm
+pwm_map	hard_pwm.c	/^volatile uint32_t *clk_map=NULL, *pwm_map=NULL;$/;"	v
+pwm_set_duty_cycle	soft_pwm.c	/^void pwm_set_duty_cycle(int gpio, float dutycycle)$/;"	f
+pwm_set_frequency	soft_pwm.c	/^void pwm_set_frequency(int gpio, float freq)$/;"	f
+pwm_start	soft_pwm.c	/^void pwm_start(int gpio)$/;"	f
+pwm_stop	soft_pwm.c	/^void pwm_stop(int gpio)$/;"	f
+pwm_thread	soft_pwm.c	/^void *pwm_thread(void *threadarg)$/;"	f
+py_add_event_callback	py_gpio.c	/^static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject *kwargs)$/;"	f	file:
+py_add_event_detect	py_gpio.c	/^static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *kwargs)$/;"	f	file:
+py_callback	py_gpio.c	/^struct py_callback$/;"	s	file:
+py_callbacks	py_gpio.c	/^static struct py_callback *py_callbacks = NULL;$/;"	v	typeref:struct:py_callback	file:
+py_cb	py_gpio.c	/^    PyObject *py_cb;$/;"	m	struct:py_callback	file:
+py_cleanup	py_gpio.c	/^static PyObject *py_cleanup(PyObject *self, PyObject *args, PyObject *kwargs)$/;"	f	file:
+py_event_detected	py_gpio.c	/^static PyObject *py_event_detected(PyObject *self, PyObject *args)$/;"	f	file:
+py_getmode	py_gpio.c	/^static PyObject *py_getmode(PyObject *self, PyObject *args)$/;"	f	file:
+py_gpio_function	py_gpio.c	/^static PyObject *py_gpio_function(PyObject *self, PyObject *args)$/;"	f	file:
+py_input_gpio	py_gpio.c	/^static PyObject *py_input_gpio(PyObject *self, PyObject *args)$/;"	f	file:
+py_output_gpio	py_gpio.c	/^static PyObject *py_output_gpio(PyObject *self, PyObject *args)$/;"	f	file:
+py_remove_event_detect	py_gpio.c	/^static PyObject *py_remove_event_detect(PyObject *self, PyObject *args)$/;"	f	file:
+py_setmode	py_gpio.c	/^static PyObject *py_setmode(PyObject *self, PyObject *args)$/;"	f	file:
+py_setup_channel	py_gpio.c	/^static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwargs)$/;"	f	file:
+py_setwarnings	py_gpio.c	/^static PyObject *py_setwarnings(PyObject *self, PyObject *args)$/;"	f	file:
+py_wait_for_edge	py_gpio.c	/^static PyObject *py_wait_for_edge(PyObject *self, PyObject *args, PyObject *kwargs)$/;"	f	file:
+ram	cpuinfo.h	/^   char *ram;$/;"	m	struct:__anon1
+remove_callbacks	event_gpio.c	/^void remove_callbacks(int gpio)$/;"	f
+remove_edge_detect	event_gpio.c	/^void remove_edge_detect(int gpio)$/;"	f
+remove_pwm	soft_pwm.c	/^void remove_pwm(int gpio)$/;"	f
+req_off	soft_pwm.h	/^    struct timespec req_on, req_off;$/;"	m	struct:pwm	typeref:struct:pwm::
+req_on	soft_pwm.h	/^    struct timespec req_on, req_off;$/;"	m	struct:pwm	typeref:struct:pwm::timespec
+revision	cpuinfo.h	/^   char revision[1024];$/;"	m	struct:__anon1
+rising_edge	constants.h	/^PyObject *rising_edge;$/;"	v
+rpi_gpio_methods	py_gpio.c	/^PyMethodDef rpi_gpio_methods[] = {$/;"	v
+rpi_info	cpuinfo.h	/^} rpi_info;$/;"	t	typeref:struct:__anon1
+rpi_revision	py_gpio.c	/^static PyObject *rpi_revision; \/\/ deprecated$/;"	v	file:
+rpigpiomodule	py_gpio.c	/^static struct PyModuleDef rpigpiomodule = {$/;"	v	typeref:struct:PyModuleDef	file:
+rpiinfo	common.h	/^rpi_info rpiinfo;$/;"	v
+run_callbacks	event_gpio.c	/^void run_callbacks(int gpio)$/;"	f
+run_py_callbacks	py_gpio.c	/^static void run_py_callbacks(int gpio)$/;"	f	file:
+running	soft_pwm.h	/^    int running;$/;"	m	struct:pwm
+serial	constants.h	/^PyObject *serial;$/;"	v
+setDutyCycle	hard_pwm.c	/^int setDutyCycle(int gpio, float dutycycle)$/;"	f
+setFrequency	hard_pwm.c	/^int setFrequency(int gpio, float frequency)$/;"	f
+setMode	hard_pwm.c	/^int setMode(int gpio, int mode)$/;"	f
+setPolarity	hard_pwm.c	/^int setPolarity(int gpio, _Bool pol)$/;"	f
+set_falling_event	c_gpio.c	/^void set_falling_event(int gpio, int enable)$/;"	f
+set_high_event	c_gpio.c	/^void set_high_event(int gpio, int enable)$/;"	f
+set_low_event	c_gpio.c	/^void set_low_event(int gpio, int enable)$/;"	f
+set_pullupdn	c_gpio.c	/^void set_pullupdn(int gpio, int pud)$/;"	f
+set_rising_event	c_gpio.c	/^void set_rising_event(int gpio, int enable)$/;"	f
+setup	c_gpio.c	/^int setup(void)$/;"	f
+setup_error	common.c	/^int setup_error = 0;$/;"	v
+setup_error	common.h	/^int setup_error;$/;"	v
+setup_gpio	c_gpio.c	/^void setup_gpio(int gpio, int direction, int pud)$/;"	f
+setup_hard_pwm	hard_pwm.c	/^int setup_hard_pwm(int gpio)$/;"	f
+setup_one	py_gpio.c	/^int setup_one(int channel, int direction, int pud, int initial)$/;"	f
+short_wait	c_gpio.c	/^void short_wait(int cycle)$/;"	f
+slicetime	soft_pwm.h	/^    float slicetime;$/;"	m	struct:pwm
+spi	constants.h	/^PyObject *spi;$/;"	v
+thread_added	event_gpio.h	/^    int thread_added;$/;"	m	struct:gpios
+thread_running	event_gpio.c	/^int thread_running = 0;$/;"	v
+threads	soft_pwm.c	/^pthread_t threads;$/;"	v
+type	cpuinfo.h	/^   char *type;$/;"	m	struct:__anon1
+unknown	constants.h	/^PyObject *unknown;$/;"	v
+value_fd	event_gpio.h	/^    int value_fd;$/;"	m	struct:gpios
+x_write	event_gpio.c	45;"	d	file:

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018 Ben Croston
+Copyright (c) 2013 Ben Croston
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -21,13 +21,10 @@ SOFTWARE.
 */
 
 /* Software PWM using threads */
-
-#ifndef _SOFT_PWM_H
-#define _SOFT_PWM_H
-
+ 
 struct pwm
 {
-    int gpio;
+    unsigned int gpio;
     float freq;
     float dutycycle;
     float basetime;
@@ -37,10 +34,7 @@ struct pwm
     struct pwm *next;
 };
 
-void pwm_set_duty_cycle(int gpio, float dutycycle);
-void pwm_set_frequency(int gpio, float freq);
-void pwm_start(int gpio);
-void pwm_stop(int gpio);
-int pwm_exists(int gpio);
-
-#endif    /*  _SOFT_PWM_H */
+void pwm_set_duty_cycle(unsigned int gpio, float dutycycle);
+void pwm_set_frequency(unsigned int gpio, float freq);
+void pwm_start(unsigned int gpio);
+void pwm_stop(unsigned int gpio);

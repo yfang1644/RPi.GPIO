@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2018 Ben Croston
+Copyright (c) 2013 Ben Croston
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -22,7 +22,6 @@ SOFTWARE.
 
 #include "Python.h"
 #include "soft_pwm.h"
-#include "hard_pwm.h"
 #include "py_pwm.h"
 #include "common.h"
 #include "c_gpio.h"
@@ -30,7 +29,7 @@ SOFTWARE.
 typedef struct
 {
     PyObject_HEAD
-    int gpio;
+    unsigned int gpio;
     float freq;
     float dutycycle;
 } PWMObject;
@@ -48,12 +47,6 @@ static int PWM_init(PWMObject *self, PyObject *args, PyObject *kwds)
     if (get_gpio_number(channel, &(self->gpio)))
         return -1;
 
-    // does soft pwm already exist on this channel?
-    if (pwm_exists(self->gpio)) {
-        PyErr_SetString(PyExc_RuntimeError, "A PWM object already exists for this GPIO channel");
-        return -1;
-    }
-
     // ensure channel set as output
     if (gpio_direction[self->gpio] != OUTPUT) {
         PyErr_SetString(PyExc_RuntimeError, "You must setup() the GPIO channel as an output first");
@@ -66,15 +59,8 @@ static int PWM_init(PWMObject *self, PyObject *args, PyObject *kwds)
     }
 
     self->freq = frequency;
-    if(self->gpio == 18 || self->gpio == 19) {
-        hardwarePWM_init();
-        setup_hard_pwm(self->gpio);
-        setMode(self->gpio, PWM_MSMODE);
-        setFrequency(self->gpio, self->freq);
-    } else {
-        pwm_set_frequency(self->gpio, self->freq);
-    }
 
+    pwm_set_frequency(self->gpio, self->freq);
     return 0;
 }
 
@@ -92,14 +78,8 @@ static PyObject *PWM_start(PWMObject *self, PyObject *args)
     }
 
     self->dutycycle = dutycycle;
-    if (self->gpio == 18 || self->gpio == 19) {
-        setDutyCycle(self->gpio, self->dutycycle);
-        PWM_enable(self->gpio, 1);
-    } else {
-        pwm_set_duty_cycle(self->gpio, self->dutycycle);
-        pwm_start(self->gpio);
-    }
-
+    pwm_set_duty_cycle(self->gpio, self->dutycycle);
+    pwm_start(self->gpio);
     Py_RETURN_NONE;
 }
 
@@ -116,12 +96,7 @@ static PyObject *PWM_ChangeDutyCycle(PWMObject *self, PyObject *args)
     }
 
     self->dutycycle = dutycycle;
-    if(self->gpio == 18 || self->gpio == 19) {
-        setDutyCycle(self->gpio, dutycycle);
-    } else {
-        pwm_set_duty_cycle(self->gpio, self->dutycycle);
-    }
-
+    pwm_set_duty_cycle(self->gpio, self->dutycycle);
     Py_RETURN_NONE;
 }
 
@@ -133,31 +108,21 @@ static PyObject *PWM_ChangeFrequency(PWMObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "f", &frequency))
         return NULL;
 
-    if (frequency <= 0.0 || frequency > 19200000.0) {
-        PyErr_SetString(PyExc_ValueError, "frequency must between 0.0 and 19.2MHz");
+    if (frequency <= 0.0) {
+        PyErr_SetString(PyExc_ValueError, "frequency must be greater than 0.0");
         return NULL;
     }
 
     self->freq = frequency;
 
-    if(self->gpio == 18 || self->gpio == 19) {
-        setFrequency(self->gpio, self->freq);
-    } else {
-        pwm_set_frequency(self->gpio, self->freq);
-    }
-
+    pwm_set_frequency(self->gpio, self->freq);
     Py_RETURN_NONE;
 }
 
 // python function PWM.stop(self)
 static PyObject *PWM_stop(PWMObject *self, PyObject *args)
 {
-    if(self->gpio == 18 || self->gpio == 19) {
-        PWM_enable(self->gpio, 0);
-    } else {
-        pwm_stop(self->gpio);
-    }
-
+    pwm_stop(self->gpio);
     Py_RETURN_NONE;
 }
 
