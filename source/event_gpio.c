@@ -24,10 +24,10 @@ SOFTWARE.
 #include <sys/epoll.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 #include <sys/time.h>
 #include "c_gpio.h"
 #include "event_gpio.h"

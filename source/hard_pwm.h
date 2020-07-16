@@ -1,3 +1,21 @@
+/*
+ * ============================================================================
+ *
+ *       Filename:  hard_pwm.h
+ *
+ *    Description:  Hardware pwm for RPi
+ *
+ *        Version:  1.0
+ *        Created:  01/20/2019 02:14:26 PM
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Fang Yuan (yfang@nju.edu.cn)
+ *   Organization:  nju
+ *
+ * ============================================================================
+ */
+
 #ifndef _HARD_PWM_H
 #define _HARD_PWM_H
 

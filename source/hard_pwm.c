@@ -1,3 +1,21 @@
+/*
+ * ============================================================================
+ *
+ *       Filename:  hard_pwm.c
+ *
+ *    Description:  Hardware PWM for RPi at gpio 18/19
+ *
+ *        Version:  1.0
+ *        Created:  01/20/2019 01:27:54 PM
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Fang Yuan (yfang@nju.edu.cn)
+ *   Organization:  nju
+ *
+ * ============================================================================
+ */
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
